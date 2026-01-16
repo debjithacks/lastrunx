@@ -1,0 +1,211 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  password      String
+  phone         String?   @unique
+  phoneVerified Boolean   @default(false)
+  walletBalance Decimal   @default(0) @db.Decimal(10, 2)
+  role          Role      @default(USER)
+  kycVerified   Boolean   @default(false)
+  kycDocuments  Json?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  gameProfiles    GameProfile[]
+  registrations   Registration[]
+  transactions    Transaction[]
+  accounts        Account[]
+  sessions        Session[]
+
+  @@index([email])
+  @@index([username])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model GameProfile {
+  id             String   @id @default(cuid())
+  userId         String
+  gameName       String
+  inGameId       String
+  inGameUsername String
+  verified       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, gameName])
+  @@index([userId])
+}
+
+model Tournament {
+  id          String            @id @default(cuid())
+  game        String
+  title       String
+  description String?           @db.Text
+  image       String
+  entryFee    Decimal           @db.Decimal(10, 2)
+  prizePool   Decimal           @db.Decimal(10, 2)
+  maxPlayers  Int
+  minPlayers  Int               @default(2)
+  mode        TournamentMode
+  status      TournamentStatus  @default(UPCOMING)
+  startTime   DateTime
+  endTime     DateTime?
+  roomId      String?
+  roomPassword String?
+  rules       Json?
+  prizeDistribution Json?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  registrations Registration[]
+
+  @@index([game])
+  @@index([status])
+  @@index([startTime])
+}
+
+model Registration {
+  id            String            @id @default(cuid())
+  userId        String
+  tournamentId  String
+  paymentStatus PaymentStatus     @default(PENDING)
+  paymentId     String?
+  rank          Int?
+  kills         Int?
+  points        Int?
+  winnings      Decimal?          @db.Decimal(10, 2)
+  resultProof   String?           // Screenshot URL
+  status        RegistrationStatus @default(REGISTERED)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tournament Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tournamentId])
+  @@index([userId])
+  @@index([tournamentId])
+  @@index([status])
+}
+
+model Transaction {
+  id              String            @id @default(cuid())
+  userId          String
+  type            TransactionType
+  amount          Decimal           @db.Decimal(10, 2)
+  status          TransactionStatus @default(PENDING)
+  razorpayOrderId String?
+  razorpayPaymentId String?
+  razorpaySignature String?
+  description     String?
+  metadata        Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TournamentMode {
+  SOLO
+  DUO
+  SQUAD
+}
+
+enum TournamentStatus {
+  UPCOMING
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  PLAYING
+  COMPLETED
+  DISQUALIFIED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TOURNAMENT_FEE
+  TOURNAMENT_WINNING
+  REFUND
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
