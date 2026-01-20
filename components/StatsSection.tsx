@@ -3,7 +3,7 @@
 export function StatsSection() {
   const stats = [
     { number: '100%', label: 'Skill-Based' },
-    { number: '✓', label: 'Legal Compliant' },
+    { number: '⚖️', label: 'Legal Compliant' },
     { number: '₹10+', label: 'Min Entry' },
     { number: '5K+', label: 'Active Players' },
   ]

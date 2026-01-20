@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       }
     })
 
-    return NextResponse.json({ tournaments })
+    return NextResponse.json(tournaments)
   } catch (error) {
     console.error('Admin tournaments fetch error:', error)
     return NextResponse.json(

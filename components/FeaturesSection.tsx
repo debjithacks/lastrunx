@@ -3,7 +3,7 @@
 export function FeaturesSection() {
   const features = [
     {
-      icon: '�',
+      icon: '🎯',
       title: '100% Skill-Based',
       description: 'BGMI, Free Fire Max, COD Mobile, Mobile Legends. Pure skill, no luck.',
       gradient: 'from-blue-500 to-cyan-500'

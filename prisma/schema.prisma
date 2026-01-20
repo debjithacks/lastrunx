@@ -22,6 +22,7 @@ model User {
   kycVerified   Boolean   @default(false)
   kycDocuments  Json?
   isActive      Boolean   @default(true)
+  lastActive    DateTime? @default(now())
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -31,9 +32,14 @@ model User {
   transactions    Transaction[]
   accounts        Account[]
   sessions        Session[]
+  fines           Fine[]
+  disputes        Dispute[]
+  sentNotifications NotificationHistory[] @relation("SentBy")
+  receivedNotifications NotificationHistory[] @relation("ReceivedBy")
 
   @@index([email])
   @@index([username])
+  @@index([role])
 }
 
 model Account {
@@ -122,11 +128,14 @@ model Registration {
   tournamentId  String
   paymentStatus PaymentStatus     @default(PENDING)
   paymentId     String?
+  inGameId      String?           // Player's in-game ID for verification
+  inGameUsername String?          // Player's IGN for verification
   rank          Int?
   kills         Int?
   points        Int?
   winnings      Decimal?          @db.Decimal(10, 2)
   resultProof   String?           // Screenshot URL
+  verifiedInRoom Boolean          @default(false) // Admin marks as verified
   status        RegistrationStatus @default(REGISTERED)
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
@@ -150,6 +159,7 @@ model Transaction {
   razorpayPaymentId String?
   razorpaySignature String?
   description     String?
+  reason          String?           // For fines/refunds
   metadata        Json?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -166,6 +176,10 @@ model Transaction {
 enum Role {
   USER
   ADMIN
+  SUPER_ADMIN
+  TOURNAMENT_MANAGER
+  SUPPORT
+  MARKETING
 }
 
 enum TournamentMode {
@@ -201,6 +215,8 @@ enum TransactionType {
   TOURNAMENT_FEE
   TOURNAMENT_WINNING
   REFUND
+  FINE
+  PROMOTIONAL_EXPENSE
 }
 
 enum TransactionStatus {
@@ -208,4 +224,170 @@ enum TransactionStatus {
   SUCCESS
   FAILED
   REFUNDED
+}
+
+model Coupon {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  type          CouponType
+  discountType  DiscountType
+  discountValue Decimal      @db.Decimal(10, 2)
+  scope         CouponScope
+  gameType      String?      // For GAME scope
+  tournamentId  String?      // For TOURNAMENT scope
+  minAmount     Decimal?     @db.Decimal(10, 2)
+  maxDiscount   Decimal?     @db.Decimal(10, 2)
+  usageLimit    Int?
+  usedCount     Int          @default(0)
+  isActive      Boolean      @default(true)
+  validFrom     DateTime     @default(now())
+  validUntil    DateTime
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  usages CouponUsage[]
+
+  @@index([code])
+  @@index([isActive])
+  @@index([validUntil])
+}
+
+model CouponUsage {
+  id        String   @id @default(cuid())
+  couponId  String
+  userId    String
+  discount  Decimal  @db.Decimal(10, 2)
+  usedAt    DateTime @default(now())
+
+  coupon Coupon @relation(fields: [couponId], references: [id], onDelete: Cascade)
+
+  @@index([couponId])
+  @@index([userId])
+}
+
+model Fine {
+  id          String     @id @default(cuid())
+  userId      String
+  amount      Decimal    @db.Decimal(10, 2)
+  reason      String     @db.Text
+  evidence    String?    // Screenshot/proof URL
+  tournamentId String?
+  status      FineStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dispute Dispute?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Dispute {
+  id            String        @id @default(cuid())
+  fineId        String        @unique
+  userId        String
+  justification String        @db.Text
+  evidence      String?       // User's proof
+  status        DisputeStatus @default(PENDING)
+  reviewedBy    String?       // Admin ID
+  reviewNotes   String?       @db.Text
+  reviewedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  fine Fine   @relation(fields: [fineId], references: [id], onDelete: Cascade)
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model NotificationTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  title       String
+  message     String   @db.Text
+  category    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model NotificationHistory {
+  id          String              @id @default(cuid())
+  title       String
+  message     String              @db.Text
+  targetType  NotificationTarget
+  targetFilter Json?              // Stores filter criteria
+  sentBy      String
+  recipientId String?             // For individual notifications
+  totalSent   Int                 @default(0)
+  sentAt      DateTime            @default(now())
+
+  sender    User  @relation("SentBy", fields: [sentBy], references: [id], onDelete: Cascade)
+  recipient User? @relation("ReceivedBy", fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([sentBy])
+  @@index([recipientId])
+  @@index([sentAt])
+}
+
+model AdminActivity {
+  id          String   @id @default(cuid())
+  adminId     String
+  action      String
+  targetType  String?  // Tournament, User, Coupon, etc.
+  targetId    String?
+  details     Json?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+enum CouponType {
+  FIRST_TIME
+  PROMOTIONAL
+  REFERRAL
+  SPECIAL_EVENT
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum CouponScope {
+  PLATFORM_WIDE
+  GAME_SPECIFIC
+  TOURNAMENT_SPECIFIC
+}
+
+enum FineStatus {
+  ACTIVE
+  DISPUTED
+  WAIVED
+  PAID
+}
+
+enum DisputeStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationTarget {
+  ALL_USERS
+  GAME_SPECIFIC
+  ACTIVE_USERS
+  INACTIVE_USERS
+  WALLET_BASED
+  TOURNAMENT_PARTICIPANTS
+  CUSTOM
 }
