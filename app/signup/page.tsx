@@ -29,11 +29,36 @@ export default function SignupPage() {
     }
     
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Signup attempt:', formData)
+    
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          username: formData.fullName.toLowerCase().replace(/\s+/g, ''),
+          password: formData.password,
+          phone: formData.phone,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert(data.error || 'Registration failed')
+        return
+      }
+
+      alert('Account created successfully! Please login.')
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('Signup error:', error)
+      alert('An error occurred during registration')
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
