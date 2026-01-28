@@ -1,3 +1,5 @@
+import { sendOTP as sendOTPViaSMS } from './sms'
+
 // Simple in-memory OTP storage (use Redis in production)
 const otpStore = new Map<string, { otp: string; expires: number }>()
 
@@ -27,6 +29,10 @@ export function verifyOTP(phone: string, otp: string): boolean {
   }
   
   return false
+}
+
+export async function sendOTP(phone: string, otp: string) {
+  await sendOTPViaSMS(phone, otp)
 }
 
 export async function sendSMS(phone: string, message: string): Promise<boolean> {

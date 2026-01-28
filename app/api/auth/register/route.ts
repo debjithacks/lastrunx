@@ -1,9 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { authRateLimit, getClientIdentifier, createRateLimitResponse } from '@/lib/rate-limit'
+import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const identifier = getClientIdentifier(req)
+    const rateLimitResult = authRateLimit(identifier)
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult)
+    }
+
     const { email, username, password, phone } = await req.json()
 
     // Validation
@@ -49,6 +58,11 @@ export async function POST(req: NextRequest) {
         createdAt: true,
       }
     })
+
+    // Send welcome email (don't wait for it to avoid blocking)
+    sendWelcomeEmail(email, username).catch(err => 
+      console.error('Failed to send welcome email:', err)
+    )
 
     return NextResponse.json(
       { 

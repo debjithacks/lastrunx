@@ -7,9 +7,10 @@ import { logAdminActivity, sendNotification } from '@/lib/admin-utils'
 // POST /api/admin/users/[id]/fine - Issue a fine to user
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['ADMIN', 'SUPER_ADMIN', 'SUPPORT'].includes(session.user.role)) {
@@ -20,7 +21,7 @@ export async function POST(
     const { amount, reason, evidence, tournamentId } = body
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!user) {
@@ -32,7 +33,7 @@ export async function POST(
       // Create fine
       const fine = await tx.fine.create({
         data: {
-          userId: params.id,
+          userId: id,
           amount: parseFloat(amount),
           reason,
           evidence,
@@ -42,7 +43,7 @@ export async function POST(
 
       // Deduct from wallet
       await tx.user.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           walletBalance: {
             decrement: parseFloat(amount),
@@ -53,7 +54,7 @@ export async function POST(
       // Create transaction record
       const transaction = await tx.transaction.create({
         data: {
-          userId: params.id,
+          userId: id,
           type: 'FINE',
           amount: parseFloat(amount),
           status: 'SUCCESS',
@@ -77,7 +78,7 @@ export async function POST(
       'ISSUE_FINE',
       'Fine',
       result.fine.id,
-      { userId: params.id, amount, reason }
+      { userId: id, amount, reason }
     )
 
     return NextResponse.json(result.fine)

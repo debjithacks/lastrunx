@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { logAdminActivity } from '@/lib/admin-utils'
 
 // GET /api/admin/analytics - Get dashboard analytics
@@ -101,7 +102,9 @@ export async function GET(request: NextRequest) {
     const kycPending = await prisma.user.count({
       where: {
         kycVerified: false,
-        kycDocuments: { not: null },
+        kycDocuments: {
+          not: Prisma.DbNull,
+        },
       },
     })
 

@@ -1,6 +1,8 @@
 import crypto from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { authRateLimit, getClientIdentifier, createRateLimitResponse } from '@/lib/rate-limit'
+import { sendPasswordResetEmail } from '@/lib/email'
 
 // Store reset tokens (use Redis in production)
 const resetTokens = new Map<string, { email: string; expires: number }>()
@@ -8,6 +10,13 @@ const resetTokens = new Map<string, { email: string; expires: number }>()
 // POST /api/auth/forgot-password - Send reset link
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const identifier = getClientIdentifier(req)
+    const rateLimitResult = authRateLimit(identifier)
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult)
+    }
+
     const { email } = await req.json()
 
     if (!email) {
@@ -30,14 +39,23 @@ export async function POST(req: NextRequest) {
 
     // Generate reset token
     const token = crypto.randomBytes(32).toString('hex')
-    resetTokens.set(token, {
-      email,
-      expires: Date.now() + 60 * 60 * 1000, // 1 hour
+    
+    // Store token in database (expires in 1 hour)
+    await prisma.verificationToken.create({
+      data: {
+        identifier: email,
+        token,
+        expires: new Date(Date.now() + 3600000), // 1 hour
+      },
     })
 
-    // TODO: Send email with reset link
+    // Send reset email
     const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`
-    console.log(`📧 Password reset link for ${email}: ${resetLink}`)
+    
+    // Send email (don't wait to avoid blocking and prevent email enumeration)
+    sendPasswordResetEmail(email, resetLink).catch(err =>
+      console.error('Failed to send password reset email:', err)
+    )
 
     return NextResponse.json({
       message: 'If the email exists, a reset link has been sent',

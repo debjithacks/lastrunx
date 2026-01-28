@@ -7,9 +7,10 @@ import { canViewRoomDetails } from '@/lib/admin-utils'
 // GET /api/tournaments/[id]/room-details - Get room details (15-30 min before start)
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
@@ -21,7 +22,7 @@ export async function GET(
       where: {
         userId_tournamentId: {
           userId: session.user.id,
-          tournamentId: params.id,
+          tournamentId: id,
         },
       },
       include: {

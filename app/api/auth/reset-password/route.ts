@@ -1,10 +1,6 @@
-import crypto from 'crypto'
 import bcrypt from 'bcryptjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-
-// Import token store from forgot-password (in production, use shared Redis)
-declare const resetTokens: Map<string, { email: string; expires: number }>
 
 // POST /api/auth/reset-password - Reset password with token
 export async function POST(req: NextRequest) {
@@ -25,19 +21,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verify token (in production, check Redis)
-    // For now, we'll validate directly
-    const tokenData = (global as any).resetTokens?.get(token)
+    // Find token in database
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+    })
 
-    if (!tokenData) {
+    if (!verificationToken) {
       return NextResponse.json(
         { error: 'Invalid or expired reset token' },
         { status: 400 }
       )
     }
 
-    if (Date.now() > tokenData.expires) {
-      (global as any).resetTokens?.delete(token)
+    if (verificationToken.expires < new Date()) {
+      await prisma.verificationToken.delete({ where: { token } })
       return NextResponse.json(
         { error: 'Reset token has expired' },
         { status: 400 }
@@ -49,14 +46,12 @@ export async function POST(req: NextRequest) {
 
     // Update user password
     await prisma.user.update({
-      where: { email: tokenData.email },
-      data: {
-        password: hashedPassword,
-      },
+      where: { email: verificationToken.identifier },
+      data: { password: hashedPassword },
     })
 
     // Delete used token
-    (global as any).resetTokens?.delete(token)
+    await prisma.verificationToken.delete({ where: { token } })
 
     return NextResponse.json({
       message: 'Password reset successfully',

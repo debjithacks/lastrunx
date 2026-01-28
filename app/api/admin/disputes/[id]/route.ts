@@ -7,9 +7,10 @@ import { logAdminActivity, sendNotification } from '@/lib/admin-utils'
 // PUT /api/admin/disputes/[id] - Review dispute
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['ADMIN', 'SUPER_ADMIN', 'SUPPORT'].includes(session.user.role)) {
@@ -20,7 +21,7 @@ export async function PUT(
     const { status, reviewNotes } = body
 
     const dispute = await prisma.dispute.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         fine: true,
         user: true,
@@ -34,7 +35,7 @@ export async function PUT(
     // Update dispute and fine in transaction
     const result = await prisma.$transaction(async (tx) => {
       const updatedDispute = await tx.dispute.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status,
           reviewNotes,
@@ -96,7 +97,7 @@ export async function PUT(
       session.user.id,
       'REVIEW_DISPUTE',
       'Dispute',
-      params.id,
+      id,
       { status, reviewNotes }
     )
 

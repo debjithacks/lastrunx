@@ -1,4 +1,6 @@
 import { prisma } from './prisma'
+import { sendEmail } from './email'
+import { sendSMS } from './sms'
 
 // Generate random coupon code
 export function generateCouponCode(length: number = 8): string {
@@ -162,16 +164,15 @@ export async function sendNotification(
   title: string,
   message: string
 ) {
-  // TODO: Implement actual email/SMS sending
-  // For now, just log
-  console.log(`Sending notification to ${recipient.email || recipient.phone}:`, { title, message })
-  
-  // In production, use nodemailer for email and SMS service for phone
-  // Example:
-  // if (recipient.email) {
-  //   await sendEmail(recipient.email, title, message)
-  // }
-  // if (recipient.phone) {
-  //   await sendSMS(recipient.phone, message)
-  // }
+  try {
+    if (recipient.email) {
+      await sendEmail(recipient.email, title, message)
+    }
+    
+    if (recipient.phone) {
+      await sendSMS(recipient.phone, message)
+    }
+  } catch (error) {
+    console.error('Failed to send notification:', error)
+  }
 }

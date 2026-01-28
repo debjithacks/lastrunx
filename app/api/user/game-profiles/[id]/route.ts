@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // PUT /api/user/game-profiles/[id] - Update game profile
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
@@ -18,7 +19,7 @@ export async function PUT(
     const { inGameId, inGameUsername } = await req.json()
 
     const profile = await prisma.gameProfile.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!profile) {
@@ -33,7 +34,7 @@ export async function PUT(
     }
 
     const updated = await prisma.gameProfile.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(inGameId && { inGameId }),
         ...(inGameUsername && { inGameUsername }),
@@ -54,9 +55,10 @@ export async function PUT(
 // DELETE /api/user/game-profiles/[id] - Delete game profile
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
@@ -64,7 +66,7 @@ export async function DELETE(
     }
 
     const profile = await prisma.gameProfile.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!profile) {
@@ -79,7 +81,7 @@ export async function DELETE(
     }
 
     await prisma.gameProfile.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Game profile deleted successfully' })

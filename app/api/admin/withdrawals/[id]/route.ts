@@ -7,9 +7,10 @@ import { logAdminActivity } from '@/lib/admin-utils'
 // PUT /api/admin/withdrawals/[id] - Approve/reject withdrawal
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role)) {
@@ -26,7 +27,7 @@ export async function PUT(
     }
 
     const transaction = await prisma.transaction.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { user: true },
     })
 
@@ -67,7 +68,7 @@ export async function PUT(
 
       // Update transaction
       return tx.transaction.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status,
           reason: remarks,
@@ -79,7 +80,7 @@ export async function PUT(
       session.user.id,
       status === 'SUCCESS' ? 'APPROVE_WITHDRAWAL' : 'REJECT_WITHDRAWAL',
       'WITHDRAWAL',
-      params.id,
+      id,
       {
         userId: transaction.userId,
         amount: transaction.amount.toString(),

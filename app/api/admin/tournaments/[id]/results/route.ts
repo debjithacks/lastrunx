@@ -7,9 +7,10 @@ import { logAdminActivity, DEFAULT_PRIZE_DISTRIBUTION, calculatePrize } from '@/
 // POST /api/admin/tournaments/[id]/results - Submit tournament results
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
     
     if (!session || !['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER'].includes(session.user.role)) {
@@ -21,7 +22,7 @@ export async function POST(
     // results = [{ userId, rank, kills, points }, ...]
 
     const tournament = await prisma.tournament.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { registrations: true },
     })
 
@@ -48,7 +49,7 @@ export async function POST(
         // Update registration
         await tx.registration.updateMany({
           where: {
-            tournamentId: params.id,
+            tournamentId: id,
             userId,
           },
           data: {
@@ -79,7 +80,7 @@ export async function POST(
               amount: winnings,
               status: 'SUCCESS',
               description: `Winnings from ${tournament.title}`,
-              metadata: { tournamentId: params.id, rank, kills, points },
+              metadata: { tournamentId: id, rank, kills, points },
             },
           })
         }
@@ -87,7 +88,7 @@ export async function POST(
 
       // Update tournament status
       await tx.tournament.update({
-        where: { id: params.id },
+        where: { id },
         data: {
           status: 'COMPLETED',
           endTime: new Date(),
@@ -99,7 +100,7 @@ export async function POST(
       session.user.id,
       'SUBMIT_RESULTS',
       'Tournament',
-      params.id,
+      id,
       { resultsCount: results.length }
     )
 

@@ -6,9 +6,10 @@ import { prisma } from '@/lib/prisma'
 // POST /api/tournaments/[id]/apply-coupon - Apply coupon
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
@@ -68,7 +69,7 @@ export async function POST(
 
     // Get tournament
     const tournament = await prisma.tournament.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!tournament) {
@@ -86,7 +87,7 @@ export async function POST(
       )
     }
 
-    if (coupon.scope === 'TOURNAMENT_SPECIFIC' && coupon.tournamentId !== params.id) {
+    if (coupon.scope === 'TOURNAMENT_SPECIFIC' && coupon.tournamentId !== id) {
       return NextResponse.json(
         { error: 'Coupon is not valid for this tournament' },
         { status: 400 }

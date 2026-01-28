@@ -7,7 +7,7 @@ import { logAdminActivity } from '@/lib/admin-utils'
 // PUT /api/admin/coupons/[id] - Update coupon
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -16,11 +16,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
     const body = await request.json()
     const { isActive, validUntil, usageLimit } = body
 
     const coupon = await prisma.coupon.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         isActive,
         validUntil: validUntil ? new Date(validUntil) : undefined,
@@ -49,7 +50,7 @@ export async function PUT(
 // DELETE /api/admin/coupons/[id] - Delete coupon
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -58,15 +59,17 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const { id } = await params
+
     await prisma.coupon.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     await logAdminActivity(
       session.user.id,
       'DELETE_COUPON',
       'Coupon',
-      params.id
+      id
     )
 
     return NextResponse.json({ success: true })

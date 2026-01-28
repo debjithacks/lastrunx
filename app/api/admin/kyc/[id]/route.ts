@@ -2,14 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { Prisma } from '@prisma/client'
 import { logAdminActivity, sendNotification } from '@/lib/admin-utils'
 
 // PUT /api/admin/kyc/[id] - Approve/reject KYC
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !['ADMIN', 'SUPER_ADMIN'].includes(session.user.role)) {
@@ -26,7 +28,7 @@ export async function PUT(
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!user) {
@@ -42,16 +44,16 @@ export async function PUT(
 
     // Update KYC status
     const updated = await prisma.user.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         kycVerified: action === 'approve',
-        kycDocuments: action === 'reject' ? null : user.kycDocuments,
+        kycDocuments: action === 'reject' ? Prisma.DbNull : user.kycDocuments,
       },
     })
 
     // Send notification
     await sendNotification(
-      params.id,
+      { email: user.email, phone: user.phone || undefined },
       action === 'approve'
         ? 'KYC Verification Approved'
         : 'KYC Verification Rejected',
@@ -64,7 +66,7 @@ export async function PUT(
       session.user.id,
       action === 'approve' ? 'APPROVE_KYC' : 'REJECT_KYC',
       'KYC',
-      params.id,
+      id,
       {
         username: user.username,
         remarks,

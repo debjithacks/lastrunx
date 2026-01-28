@@ -5,9 +5,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
@@ -18,7 +19,7 @@ export async function POST(
     }
 
     const tournament = await prisma.tournament.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         _count: {
           select: {
@@ -50,7 +51,7 @@ export async function POST(
       where: {
         userId_tournamentId: {
           userId: session.user.id,
-          tournamentId: params.id
+          tournamentId: id
         }
       }
     })
@@ -108,7 +109,7 @@ export async function POST(
       return tx.registration.create({
         data: {
           userId: session.user.id,
-          tournamentId: params.id,
+          tournamentId: id,
           paymentStatus: 'PAID',
           status: 'REGISTERED'
         },

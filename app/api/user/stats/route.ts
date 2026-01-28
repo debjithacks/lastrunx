@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
         total: totalTournaments,
         completed: completedTournaments,
         winRate: completedTournaments > 0 
-          ? ((Number(gameStats.reduce((sum, g) => sum + Number(g.wins), 0n)) / completedTournaments) * 100).toFixed(1)
+          ? ((gameStats.reduce((sum, g) => Number(sum) + Number(g.wins), 0) / completedTournaments) * 100).toFixed(1)
           : '0.0',
       },
       earnings: {
