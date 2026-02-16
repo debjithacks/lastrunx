@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
-import { Navigation } from '@/components/Navigation'
-import { Footer } from '@/components/Footer'
 import { Providers } from '@/components/Providers'
 
 const inter = Inter({
   variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
@@ -21,12 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} antialiased`}>
+    <html lang="en">
+      <body className={`${inter.variable} ${outfit.variable} antialiased font-sans`}>
         <Providers>
-          <Navigation />
           {children}
-          <Footer />
         </Providers>
       </body>
     </html>
