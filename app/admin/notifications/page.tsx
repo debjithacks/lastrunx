@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import AdminLayout from '@/components/admin/AdminLayout'
+import { Bell, Send, Users, CheckCircle, MessageSquare, Plus } from 'lucide-react'
 
 interface NotificationTemplate {
   id: string
@@ -80,127 +80,169 @@ export default function NotificationsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg text-slate-600">Loading...</div>
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 border-4 border-slate-200 border-t-cyan-600 rounded-full animate-spin"></div>
+          <p className="text-lg font-semibold text-slate-700">Loading Notifications...</p>
         </div>
-      </AdminLayout>
+      </div>
     )
   }
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-black text-slate-800">Notifications</h1>
-            <p className="text-slate-600 mt-1">Send notifications to users</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-indigo-500/10 rounded-3xl blur-3xl -z-10"></div>
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl shadow-lg">
+              <Bell className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Notifications</h1>
+              <p className="text-slate-600 text-sm mt-0.5">Send notifications to users</p>
+            </div>
           </div>
           
           <button
             onClick={() => setShowSendModal(true)}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700"
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-700 transition-all shadow-lg shadow-cyan-500/30 flex items-center gap-2"
           >
+            <Send className="w-5 h-5" />
             Send Notification
           </button>
         </div>
+      </div>
 
-        <div className="bg-white rounded-xl border-2 border-slate-200 p-6">
-          <h2 className="text-xl font-bold text-slate-800 mb-4">Templates</h2>
-          <div className="grid gap-4">
-            {templates.map((template) => (
-              <div key={template.id} className="border-2 border-slate-200 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-slate-800">{template.name}</h3>
-                  <span className={`px-2 py-1 rounded text-xs font-bold ${
-                    template.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-700'
+      {/* Templates Grid */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <MessageSquare className="w-6 h-6 text-cyan-600" />
+          <h2 className="text-xl font-bold text-slate-900">Templates</h2>
+        </div>
+        <div className="grid gap-4">
+          {templates.map((template) => (
+            <div key={template.id} className="group bg-gradient-to-br from-slate-50 to-white border-2 border-slate-200 rounded-xl p-5 hover:shadow-lg hover:border-cyan-300 transition-all">
+              <div className="flex justify-between items-start mb-3">
+                <h3 className="font-bold text-slate-900 text-lg group-hover:text-cyan-600 transition-colors">{template.name}</h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded-lg">{template.category}</span>
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${
+                    template.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'
                   }`}>
-                    {template.isActive ? 'Active' : 'Inactive'}
+                    {template.isActive ? (
+                      <><CheckCircle className="w-3 h-3" /> Active</>
+                    ) : (
+                      'Inactive'
+                    )}
                   </span>
                 </div>
-                <p className="font-semibold text-slate-700 mb-1">{template.title}</p>
-                <p className="text-sm text-slate-600">{template.message}</p>
               </div>
-            ))}
-            {templates.length === 0 && (
-              <div className="text-center py-8 text-slate-500">
-                No templates found
+              <p className="font-semibold text-slate-800 mb-2">{template.title}</p>
+              <p className="text-sm text-slate-600 leading-relaxed">{template.message}</p>
+            </div>
+          ))}
+          {templates.length === 0 && (
+            <div className="text-center py-12 text-slate-500">
+              <Bell className="w-16 h-16 text-slate-300 mx-auto mb-3" />
+              <p className="font-semibold">No templates found</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Send Notification Modal */}
+      {showSendModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-8 max-w-2xl w-full my-8 shadow-2xl">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl">
+                <Send className="w-6 h-6 text-white" />
               </div>
-            )}
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900">Send Notification</h3>
+                <p className="text-slate-600 text-sm">Broadcast message to users</p>
+              </div>
+            </div>
+            
+            <form onSubmit={handleSendNotification} className="space-y-5">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all"
+                  placeholder="Important Update"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  Message
+                </label>
+                <textarea
+                  value={formData.message}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all resize-none"
+                  rows={5}
+                  placeholder="Your notification message..."
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <Users className="w-4 h-4 inline mr-2" />
+                  Target Audience
+                </label>
+                <select
+                  value={formData.targetType}
+                  onChange={(e) => setFormData({ ...formData, targetType: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 focus:outline-none transition-all"
+                >
+                  <option value="ALL_USERS">All Users</option>
+                  <option value="ACTIVE_USERS">Active Users (Last 7 days)</option>
+                  <option value="INACTIVE_USERS">Inactive Users (30+ days)</option>
+                  <option value="GAME_SPECIFIC">Game Specific</option>
+                  <option value="WALLET_BASED">Wallet Based</option>
+                </select>
+              </div>
+
+              <div className="flex gap-3 mt-8">
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-700 disabled:opacity-50 transition-all shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-2"
+                >
+                  {sending ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-5 h-5" />
+                      Send Notification
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowSendModal(false)}
+                  className="px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-
-        {/* Send Notification Modal */}
-        {showSendModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl p-6 max-w-2xl w-full">
-              <h3 className="text-xl font-bold text-slate-800 mb-4">Send Notification</h3>
-              
-              <form onSubmit={handleSendNotification} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none"
-                    rows={4}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Target Audience
-                  </label>
-                  <select
-                    value={formData.targetType}
-                    onChange={(e) => setFormData({ ...formData, targetType: e.target.value })}
-                    className="w-full px-4 py-2 border-2 border-slate-200 rounded-lg focus:border-blue-500 focus:outline-none"
-                  >
-                    <option value="ALL_USERS">All Users</option>
-                    <option value="ACTIVE_USERS">Active Users (Last 7 days)</option>
-                    <option value="INACTIVE_USERS">Inactive Users (30+ days)</option>
-                    <option value="GAME_SPECIFIC">Game Specific</option>
-                    <option value="WALLET_BASED">Wallet Based</option>
-                  </select>
-                </div>
-
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    disabled={sending}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {sending ? 'Sending...' : 'Send Notification'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowSendModal(false)}
-                    className="px-4 py-2 border-2 border-slate-200 text-slate-700 rounded-lg font-semibold hover:bg-slate-50"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
-    </AdminLayout>
+      )}
+    </div>
   )
 }
