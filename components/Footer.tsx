@@ -1,82 +1,101 @@
 'use client'
 
 import Link from 'next/link'
+import { Gamepad2, Twitter, Instagram, Disc as Discord, Send } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="relative bg-slate-900 border-t border-slate-800 mt-16">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Top Section */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
+    <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
-          <div className="md:col-span-4">
-            <Link href="/" className="inline-flex items-center gap-1 mb-3 group">
-              <span className="text-xl font-black bg-gradient-to-r from-slate-400 to-slate-500 bg-clip-text text-transparent">LAST</span>
-              <span className="text-xl font-black bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">RUN</span>
-              <span className="text-xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent italic -skew-x-12">X</span>
+          <div className="col-span-1 md:col-span-1">
+            <Link href="/" className="flex items-center gap-2 text-white mb-6 group">
+              <div className="bg-blue-600 p-1.5 rounded-lg">
+                <Gamepad2 className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold tracking-tight">LastRunX</span>
             </Link>
-            <p className="text-slate-400 text-sm leading-relaxed mb-4">
-              India's premier skill-based gaming platform. 100% legal, 100% fair, 100% skill.
+            <p className="text-sm leading-relaxed mb-6 text-slate-400">
+              The professional standard for skill-based mobile gaming tournaments in India. Secure, legal, and fair.
             </p>
-            <div className="flex items-center gap-3 text-xs text-slate-500">
-              <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                Legally Compliant
-              </span>
+            <div className="flex gap-4">
+              <SocialLink href="#" icon={<Twitter className="w-5 h-5" />} />
+              <SocialLink href="#" icon={<Instagram className="w-5 h-5" />} />
+              <SocialLink href="#" icon={<Discord className="w-5 h-5" />} />
+              <SocialLink href="#" icon={<Send className="w-5 h-5" />} />
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="md:col-span-2">
-            <h3 className="text-white font-semibold text-sm mb-3">Platform</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/tournaments" className="text-slate-400 hover:text-blue-400 transition-colors">Tournaments</Link></li>
-              <li><Link href="/how-it-works" className="text-slate-400 hover:text-blue-400 transition-colors">How It Works</Link></li>
-              <li><Link href="/rules" className="text-slate-400 hover:text-blue-400 transition-colors">Rules</Link></li>
+          {/* Links Column 1 */}
+          <div>
+            <h3 className="text-slate-200 font-semibold mb-6">Platform</h3>
+            <ul className="space-y-4 text-sm">
+              <li><FooterLink href="/tournaments">Browse Tournaments</FooterLink></li>
+              <li><FooterLink href="/how-it-works">How It Works</FooterLink></li>
+              <li><FooterLink href="/features">Features</FooterLink></li>
+              <li><FooterLink href="/pricing">Pricing & Fees</FooterLink></li>
             </ul>
           </div>
 
-          {/* Legal */}
-          <div className="md:col-span-2">
-            <h3 className="text-white font-semibold text-sm mb-3">Legal</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/legality" className="text-slate-400 hover:text-blue-400 transition-colors">Legal Info</Link></li>
-              <li><Link href="/legality#compliance" className="text-slate-400 hover:text-blue-400 transition-colors">Compliance</Link></li>
-              <li><Link href="/legality#skill" className="text-slate-400 hover:text-blue-400 transition-colors">Skill vs Chance</Link></li>
+          {/* Links Column 2 */}
+          <div>
+            <h3 className="text-slate-200 font-semibold mb-6">Legal & Support</h3>
+            <ul className="space-y-4 text-sm">
+              <li><FooterLink href="/legality">Legal Compliance</FooterLink></li>
+              <li><FooterLink href="/terms">Terms of Service</FooterLink></li>
+              <li><FooterLink href="/privacy">Privacy Policy</FooterLink></li>
+              <li><FooterLink href="/contact">Contact Support</FooterLink></li>
             </ul>
           </div>
 
-          {/* Support */}
-          <div className="md:col-span-2">
-            <h3 className="text-white font-semibold text-sm mb-3">Support</h3>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/contact" className="text-slate-400 hover:text-blue-400 transition-colors">Contact Us</Link></li>
-              <li><Link href="/contact#faq" className="text-slate-400 hover:text-blue-400 transition-colors">FAQ</Link></li>
-              <li><a href="mailto:support@lastrunx.in" className="text-slate-400 hover:text-blue-400 transition-colors">Email</a></li>
-            </ul>
-          </div>
-
-          {/* Community */}
-          <div className="md:col-span-2">
-            <h3 className="text-white font-semibold text-sm mb-3">Community</h3>
-            <ul className="space-y-2 text-sm">
-              <li><a href="https://discord.gg/lastrunx" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-400 transition-colors">Discord</a></li>
-              <li><a href="https://t.me/lastrunx" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-400 transition-colors">Telegram</a></li>
-              <li><a href="https://instagram.com/lastrunx.india" target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-blue-400 transition-colors">Instagram</a></li>
-            </ul>
+          {/* Newsletter/Status */}
+          <div>
+            <h3 className="text-slate-200 font-semibold mb-6">System Status</h3>
+            <div className="flex items-center gap-3 text-sm mb-4">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <span className="text-emerald-500 font-medium">All Systems Operational</span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Server Time: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}
+            </p>
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-slate-800"></div>
-
-        {/* Bottom Section */}
-        <div className="text-center pt-6">
-          <p className="text-slate-500 text-sm">
-            &copy; 2026 LastRunx. All rights reserved.
-          </p>
+        <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+          <p>&copy; {new Date().getFullYear()} LastRunX. All rights reserved.</p>
+          <div className="flex gap-6">
+            <Link href="/privacy" className="hover:text-slate-300 transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-slate-300 transition-colors">Terms</Link>
+            <Link href="/cookies" className="hover:text-slate-300 transition-colors">Cookies</Link>
+          </div>
         </div>
       </div>
     </footer>
+  )
+}
+
+function SocialLink({ href, icon }: { href: string; icon: React.ReactNode }) {
+  return (
+    <a
+      href={href}
+      className="text-slate-400 hover:text-white hover:bg-slate-800 p-2 rounded-full transition-all"
+    >
+      {icon}
+    </a>
+  )
+}
+
+function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="block text-slate-400 hover:text-blue-400 transition-colors"
+    >
+      {children}
+    </Link>
   )
 }
