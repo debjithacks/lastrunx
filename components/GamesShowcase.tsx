@@ -2,41 +2,46 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowRight, Flame, Target, Crosshair, Sword, Crown } from 'lucide-react'
+import { FlaticonIcon } from './FlaticonIcon'
 
 export function GamesShowcase() {
   const games = [
     {
       name: 'BGMI',
-      icon: <Target className="w-6 h-6 text-orange-500" />,
+      icon: 'gamepad',
+      iconColor: 'text-orange-500',
       image: '/images/games/bgmi.avif',
       color: 'from-orange-500 to-red-500',
       description: 'Battle Royale'
     },
     {
       name: 'Free Fire Max',
-      icon: <Flame className="w-6 h-6 text-red-500" />,
+      icon: 'rocket',
+      iconColor: 'text-red-500',
       image: '/images/games/ff-max.jpg',
       color: 'from-red-500 to-pink-500',
       description: 'Survival Shooter'
     },
     {
       name: 'COD Mobile',
-      icon: <Crosshair className="w-6 h-6 text-emerald-500" />,
+      icon: 'star',
+      iconColor: 'text-emerald-500',
       image: '/images/games/codm.webp',
       color: 'from-emerald-500 to-teal-500',
       description: 'FPS Action'
     },
     {
       name: 'Mobile Legends',
-      icon: <Sword className="w-6 h-6 text-purple-500" />,
+      icon: 'shield',
+      iconColor: 'text-purple-500',
       image: '/images/games/mlbb.jpg',
       color: 'from-purple-500 to-indigo-500',
       description: '5v5 MOBA'
     },
     {
       name: 'Clash Royale',
-      icon: <Crown className="w-6 h-6 text-blue-500" />,
+      icon: 'trophy',
+      iconColor: 'text-blue-500',
       image: '/images/games/clashroyale.webp',
       color: 'from-blue-500 to-cyan-500',
       description: 'Strategy'
@@ -88,7 +93,7 @@ export function GamesShowcase() {
                 <div>
                   <div className="flex items-center gap-3 mb-3">
                     <div className={`p-2 rounded-lg bg-gradient-to-br ${game.color} bg-opacity-10 border border-slate-100`}>
-                      {game.icon}
+                      <FlaticonIcon name={game.icon} style="bold" className={`text-xl ${game.iconColor}`} />
                     </div>
                     <h3 className="font-bold text-slate-900 text-lg leading-tight">
                       {game.name}
@@ -98,7 +103,7 @@ export function GamesShowcase() {
 
                 <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-sm font-semibold text-blue-600 group-hover:text-blue-700">
                   <span>Join Tournament</span>
-                  <ArrowRight className="w-4 h-4 transform group-hover:translate-x-2 transition-transform" />
+                  <FlaticonIcon name="arrow-small-right" style="bold" className="text-base transform group-hover:translate-x-2 transition-transform" />
                 </div>
               </div>
             </Link>
