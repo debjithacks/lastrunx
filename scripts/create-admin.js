@@ -8,30 +8,45 @@ async function createAdmin() {
     // Hash password
     const hashedPassword = await bcrypt.hash('admin123', 12)
     
-    // Create or update admin user
-    const admin = await prisma.user.upsert({
-      where: { email: 'admin@yourdomain.com' },
-      update: {
-        password: hashedPassword,
-        role: 'SUPER_ADMIN',
-        isActive: true,
-      },
-      create: {
-        email: 'admin@yourdomain.com',
-        username: 'admin',
-        password: hashedPassword,
-        role: 'SUPER_ADMIN',
-        isActive: true,
-      },
+    // Check if admin email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email: 'admin@lastrunx.in' }
     })
 
-    console.log('✅ Admin user created successfully!')
+    let admin
+    if (existingUser) {
+      // Update existing user
+      admin = await prisma.user.update({
+        where: { email: 'admin@lastrunx.in' },
+        data: {
+          password: hashedPassword,
+          role: 'SUPER_ADMIN',
+          isActive: true,
+        },
+      })
+      console.log('✅ Admin user updated successfully!')
+    } else {
+      // Create new admin user
+      admin = await prisma.user.create({
+        data: {
+          email: 'admin@lastrunx.in',
+          username: 'superadmin',
+          password: hashedPassword,
+          role: 'SUPER_ADMIN',
+          isActive: true,
+        },
+      })
+      console.log('✅ Admin user created successfully!')
+    }
+
     console.log('\n📧 Email:', admin.email)
     console.log('🔑 Password: admin123')
     console.log('👤 Role:', admin.role)
+    console.log('👤 Username:', admin.username)
     console.log('\n🌐 Login at: http://localhost:3000/admin/login')
   } catch (error) {
     console.error('❌ Error creating admin:', error.message)
+    console.error('Full error:', error)
   } finally {
     await prisma.$disconnect()
   }
