@@ -2,12 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-    LayoutDashboard, Trophy, Users, Ticket,
-    Scale, Bell, FileText, Settings, LogOut,
-    ShieldCheck, X, ChevronLeft, ChevronRight
-} from 'lucide-react'
-import { useState } from 'react'
+import { FlaticonIcon } from '../FlaticonIcon'
 
 interface SidebarProps {
     isOpen: boolean
@@ -20,14 +15,14 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
     const pathname = usePathname()
 
     const navigation = [
-        { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-        { name: 'Tournaments', href: '/admin/tournaments', icon: Trophy },
-        { name: 'Users', href: '/admin/users', icon: Users },
-        { name: 'Coupons', href: '/admin/coupons', icon: Ticket },
-        { name: 'Disputes', href: '/admin/disputes', icon: Scale },
-        { name: 'Notifications', href: '/admin/notifications', icon: Bell },
-        { name: 'Activity Logs', href: '/admin/logs', icon: FileText },
-        { name: 'Settings', href: '/admin/settings', icon: Settings },
+        { name: 'Dashboard', href: '/admin/dashboard', icon: 'dashboard' },
+        { name: 'Tournaments', href: '/admin/tournaments', icon: 'trophy' },
+        { name: 'Users', href: '/admin/users', icon: 'users' },
+        { name: 'Coupons', href: '/admin/coupons', icon: 'ticket' },
+        { name: 'Disputes', href: '/admin/disputes', icon: 'scale' },
+        { name: 'Notifications', href: '/admin/notifications', icon: 'bell' },
+        { name: 'Activity Logs', href: '/admin/logs', icon: 'file-user' },
+        { name: 'Settings', href: '/admin/settings', icon: 'settings' },
     ]
 
     return (
@@ -51,18 +46,18 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                     className="hidden lg:flex absolute -right-3 top-20 z-50 w-6 h-6 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-full items-center justify-center shadow-lg shadow-slate-900/10 transition-all duration-300 hover:scale-110"
                     title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 >
-                    {isCollapsed ? (
-                        <ChevronRight className="w-4 h-4 text-slate-700" />
-                    ) : (
-                        <ChevronLeft className="w-4 h-4 text-slate-700" />
-                    )}
+                    <FlaticonIcon 
+                        name={isCollapsed ? 'angle-right' : 'angle-left'} 
+                        style="bold" 
+                        className="text-sm text-slate-700" 
+                    />
                 </button>
 
                 {/* Header */}
                 <div className={`p-5 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white transition-all duration-300 ${isCollapsed ? 'px-3' : ''}`}>
                     <Link href="/admin/dashboard" className={`flex items-center gap-2.5 group ${isCollapsed ? 'justify-center' : ''}`}>
                         <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 group-hover:scale-105 transition-all duration-200 flex-shrink-0">
-                            <ShieldCheck className="w-5 h-5 text-white" />
+                            <FlaticonIcon name="shield-check" style="bold" className="text-lg text-white" />
                         </div>
                         {!isCollapsed && (
                             <div className="overflow-hidden transition-all duration-300">
@@ -73,9 +68,9 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                     </Link>
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white lg:hidden transition-colors"
+                        className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800 lg:hidden transition-colors"
                     >
-                        <X className="w-5 h-5" />
+                        <FlaticonIcon name="cross" style="bold" className="text-lg" />
                     </button>
                 </div>
 
@@ -96,9 +91,13 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                                     }`}
                                     title={isCollapsed ? item.name : ''}
                                 >
-                                    <item.icon className={`w-5 h-5 transition-transform duration-200 flex-shrink-0 ${
-                                        isActive ? 'scale-110' : 'group-hover:scale-110'
-                                    }`} />
+                                    <FlaticonIcon 
+                                        name={item.icon} 
+                                        style="bold" 
+                                        className={`text-lg transition-transform duration-200 ${
+                                            isActive ? 'scale-110' : 'group-hover:scale-110'
+                                        }`}
+                                    />
                                     {!isCollapsed && (
                                         <span className="font-semibold whitespace-nowrap overflow-hidden">{item.name}</span>
                                     )}
@@ -125,7 +124,7 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                         <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'mb-2 flex-col' : 'mb-3'}`}>
                             <div className="relative flex-shrink-0">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border border-slate-300">
-                                    <Users className="w-5 h-5 text-slate-600" />
+                                    <FlaticonIcon name="user" style="bold" className="text-lg text-slate-600" />
                                 </div>
                                 <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></div>
                             </div>
@@ -140,7 +139,7 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                             className={`w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.02] group ${isCollapsed ? 'px-2' : 'px-4'}`}
                             title={isCollapsed ? 'Sign Out' : ''}
                         >
-                            <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform flex-shrink-0" />
+                            <FlaticonIcon name="sign-out-alt" style="bold" className="text-base group-hover:-translate-x-0.5 transition-transform" />
                             {!isCollapsed && <span>Sign Out</span>}
                         </button>
                     </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Bell, Menu, User, Settings, LogOut } from 'lucide-react'
+import { FlaticonIcon } from '../FlaticonIcon'
 import { signOut, useSession } from 'next-auth/react'
 import Link from 'next/link'
 
@@ -22,7 +22,7 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                         onClick={onMenuClick}
                         className="p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg lg:hidden transition-colors"
                     >
-                        <Menu className="w-6 h-6" />
+                        <FlaticonIcon name="menu-burger" style="bold" className="text-xl" />
                     </button>
 
                     {/* Search Bar */}
@@ -33,7 +33,7 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                                 placeholder="Search anything..."
                                 className="w-64 pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all"
                             />
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <FlaticonIcon name="search" style="regular" className="absolute left-3 top-1/2 -translate-y-1/2 text-base text-slate-400" />
                         </div>
                     </div>
                 </div>
@@ -45,7 +45,7 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                             className="p-2 relative text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
                         >
-                            <Bell className="w-5 h-5" />
+                            <FlaticonIcon name="bell" style="bold" className="text-lg" />
                             <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
                         </button>
 
@@ -65,7 +65,7 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                                         <div className="p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 cursor-pointer">
                                             <div className="flex gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                                                    <User className="w-4 h-4" />
+                                                    <FlaticonIcon name="user" style="bold" className="text-base" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm text-slate-800 font-medium">New User Registration</p>
@@ -77,7 +77,7 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                                         <div className="p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 cursor-pointer">
                                             <div className="flex gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                                                    <Bell className="w-4 h-4" />
+                                                    <FlaticonIcon name="bell" style="bold" className="text-base" />
                                                 </div>
                                                 <div>
                                                     <p className="text-sm text-slate-800 font-medium">New Dispute Raised</p>
@@ -134,14 +134,14 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                                         href="/admin/profile"
                                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
                                     >
-                                        <User className="w-4 h-4" />
+                                        <FlaticonIcon name="user" style="regular" className="text-base" />
                                         My Profile
                                     </Link>
                                     <Link
                                         href="/admin/settings"
                                         className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
                                     >
-                                        <Settings className="w-4 h-4" />
+                                        <FlaticonIcon name="settings" style="regular" className="text-base" />
                                         Settings
                                     </Link>
                                     <div className="border-t border-slate-50 mt-1">
@@ -149,7 +149,7 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                                             onClick={() => signOut({ callbackUrl: '/admin/login' })}
                                             className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-medium"
                                         >
-                                            <LogOut className="w-4 h-4" />
+                                            <FlaticonIcon name="sign-out-alt" style="regular" className="text-base" />
                                             Sign Out
                                         </button>
                                     </div>
