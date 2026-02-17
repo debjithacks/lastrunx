@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { User, Mail, Smartphone, Lock, Eye, EyeOff, CheckSquare, Square, ArrowRight, ShieldCheck, Gamepad2 } from 'lucide-react'
+import { FlaticonIcon } from '@/components/FlaticonIcon'
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -112,7 +112,7 @@ export default function SignupPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-50 rounded-xl mb-4 text-indigo-600">
-              <Gamepad2 className="w-6 h-6" />
+              <FlaticonIcon name="gamepad" style="bold" className="text-2xl" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-2">
               Create Account
@@ -129,7 +129,7 @@ export default function SignupPage() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <User className="w-5 h-5" />
+                  <FlaticonIcon name="user" style="regular" className="text-lg" />
                 </span>
                 <input
                   type="text"
@@ -151,7 +151,7 @@ export default function SignupPage() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <Mail className="w-5 h-5" />
+                  <FlaticonIcon name="envelope" style="regular" className="text-lg" />
                 </span>
                 <input
                   type="email"
@@ -173,7 +173,7 @@ export default function SignupPage() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <Smartphone className="w-5 h-5" />
+                  <FlaticonIcon name="mobile" style="regular" className="text-lg" />
                 </span>
                 <input
                   type="tel"
@@ -195,7 +195,7 @@ export default function SignupPage() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <Lock className="w-5 h-5" />
+                  <FlaticonIcon name="lock" style="regular" className="text-lg" />
                 </span>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -212,7 +212,7 @@ export default function SignupPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  <FlaticonIcon name={showPassword ? "eye-crossed" : "eye"} style="regular" className="text-lg" />
                 </button>
               </div>
               {/* Password Strength Indicator */}
@@ -238,7 +238,7 @@ export default function SignupPage() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <ShieldCheck className="w-5 h-5" />
+                  <FlaticonIcon name="shield-check" style="regular" className="text-lg" />
                 </span>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
@@ -255,7 +255,7 @@ export default function SignupPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
                 >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  <FlaticonIcon name={showConfirmPassword ? "eye-crossed" : "eye"} style="regular" className="text-lg" />
                 </button>
               </div>
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (
@@ -275,11 +275,11 @@ export default function SignupPage() {
                     onChange={handleChange}
                     className="sr-only peer"
                   />
-                  {formData.agreeTerms ? (
-                    <CheckSquare className="w-5 h-5 text-indigo-600" />
-                  ) : (
-                    <Square className="w-5 h-5 text-slate-300 peer-focus:text-indigo-500 group-hover:text-slate-400 transition" />
-                  )}
+                  <FlaticonIcon 
+                    name={formData.agreeTerms ? "checkbox" : "square"} 
+                    style={formData.agreeTerms ? "solid" : "regular"}
+                    className={`text-lg ${formData.agreeTerms ? 'text-indigo-600' : 'text-slate-300 peer-focus:text-indigo-500 group-hover:text-slate-400'} transition`}
+                  />
                 </div>
                 <div className="text-sm text-slate-600">
                   I agree to the{' '}
@@ -305,7 +305,7 @@ export default function SignupPage() {
               ) : (
                 <>
                   <span>Create Account</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <FlaticonIcon name="arrow-small-right" style="bold" className="text-base" />
                 </>
               )}
             </button>

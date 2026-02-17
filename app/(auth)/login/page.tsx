@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { Mail, Lock, Eye, EyeOff, CheckSquare, Square, LogIn, ArrowRight, Gamepad2 } from 'lucide-react'
+import { FlaticonIcon } from '@/components/FlaticonIcon'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -68,7 +68,7 @@ export default function LoginPage() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-50 rounded-xl mb-4 text-blue-600">
-              <Gamepad2 className="w-6 h-6" />
+              <FlaticonIcon name="gamepad" style="bold" className="text-2xl" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-2">
               Welcome Back
@@ -93,7 +93,7 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <Mail className="w-5 h-5" />
+                  <FlaticonIcon name="envelope" style="regular" className="text-lg" />
                 </span>
                 <input
                   type="email"
@@ -115,7 +115,7 @@ export default function LoginPage() {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <Lock className="w-5 h-5" />
+                  <FlaticonIcon name="lock" style="regular" className="text-lg" />
                 </span>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -132,7 +132,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  <FlaticonIcon name={showPassword ? "eye-crossed" : "eye"} style="regular" className="text-lg" />
                 </button>
               </div>
             </div>
@@ -148,11 +148,11 @@ export default function LoginPage() {
                     onChange={handleChange}
                     className="sr-only peer"
                   />
-                  {formData.rememberMe ? (
-                    <CheckSquare className="w-5 h-5 text-blue-600" />
-                  ) : (
-                    <Square className="w-5 h-5 text-slate-300 peer-focus:text-blue-500 group-hover:text-slate-400 transition" />
-                  )}
+                  <FlaticonIcon 
+                    name={formData.rememberMe ? "checkbox" : "square"} 
+                    style={formData.rememberMe ? "solid" : "regular"}
+                    className={`text-lg ${formData.rememberMe ? 'text-blue-600' : 'text-slate-300 peer-focus:text-blue-500 group-hover:text-slate-400'} transition`}
+                  />
                 </div>
                 <span className="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition">
                   Remember me
@@ -177,7 +177,7 @@ export default function LoginPage() {
               ) : (
                 <>
                   <span>Sign In</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <FlaticonIcon name="arrow-small-right" style="bold" className="text-base" />
                 </>
               )}
             </button>
@@ -231,7 +231,7 @@ export default function LoginPage() {
               href="/admin/login"
               className="text-xs font-medium text-slate-400 hover:text-slate-600 transition flex items-center justify-center gap-1.5"
             >
-              <LogIn className="w-3 h-3" />
+              <FlaticonIcon name="sign-in-alt" style="regular" className="text-xs" />
               Admin Access
             </Link>
           </div>
