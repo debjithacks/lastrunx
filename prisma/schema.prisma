@@ -217,6 +217,7 @@ enum TransactionType {
   REFUND
   FINE
   PROMOTIONAL_EXPENSE
+  REFERRAL_BONUS
 }
 
 enum TransactionStatus {

@@ -1,80 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { processWithdrawalTransaction } from '@/lib/transaction-manager'
+import { withdrawalSchema, validateRequest, formatValidationErrors } from '@/lib/validation'
+import { logger, extractRequestContext } from '@/lib/logger'
 
 // POST /api/user/withdraw - Request withdrawal
 export async function POST(req: NextRequest) {
+  const startTime = Date.now()
+  const requestContext = extractRequestContext(req)
+  
   try {
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
+      logger.authEvent('Withdrawal attempt - Unauthorized', false, requestContext)
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { amount, upiId, accountNumber, ifsc, accountName } = await req.json()
+    const context = {
+      ...requestContext,
+      userId: session.user.id,
+      action: 'WITHDRAW'
+    }
+
+    const body = await req.json()
 
     // Validate amount
-    if (!amount || amount < 100) {
+    const validation = await validateRequest(withdrawalSchema, body)
+    if (!validation.success) {
+      logger.warn('Withdrawal failed - Validation error', {
+        ...context,
+        errors: formatValidationErrors(validation.errors)
+      })
       return NextResponse.json(
-        { error: 'Minimum withdrawal amount is ₹100' },
+        { error: formatValidationErrors(validation.errors) },
         { status: 400 }
       )
     }
 
-    // Get user
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-    })
+    const { amount } = validation.data
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
+    logger.info('Withdrawal request initiated', context)
 
-    // Check KYC
-    if (!user.kycVerified) {
-      return NextResponse.json(
-        { error: 'KYC verification required for withdrawals' },
-        { status: 403 }
-      )
-    }
+    // Use transaction manager for atomic operations
+    const { transaction: withdrawal } = await processWithdrawalTransaction(
+      session.user.id,
+      amount
+    )
 
-    // Check balance
-    if (user.walletBalance.lt(amount)) {
-      return NextResponse.json(
-        { error: 'Insufficient wallet balance' },
-        { status: 400 }
-      )
-    }
-
-    // Create withdrawal transaction in atomic operation
-    const withdrawal = await prisma.$transaction(async (tx) => {
-      // Deduct from wallet
-      await tx.user.update({
-        where: { id: session.user.id },
-        data: {
-          walletBalance: {
-            decrement: amount,
-          },
-        },
-      })
-
-      // Create transaction record
-      return tx.transaction.create({
-        data: {
-          userId: session.user.id,
-          type: 'WITHDRAWAL',
-          amount,
-          status: 'PENDING',
-          description: `Withdrawal request to ${upiId || accountNumber}`,
-          metadata: {
-            upiId,
-            accountNumber,
-            ifsc,
-            accountName,
-          },
-        },
-      })
+    const duration = Date.now() - startTime
+    logger.paymentEvent('Withdrawal requested', amount, {
+      ...context,
+      withdrawalId: withdrawal.id,
+      duration
     })
 
     return NextResponse.json(
@@ -89,7 +68,29 @@ export async function POST(req: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error('Withdrawal error:', error)
+    const duration = Date.now() - startTime
+    
+    if (error instanceof Error) {
+      // Business logic errors
+      if (error.message.includes('KYC') || 
+          error.message.includes('Insufficient') ||
+          error.message.includes('not found')) {
+        logger.warn('Withdrawal failed - Business logic error', {
+          ...requestContext,
+          error: error.message,
+          duration
+        })
+        return NextResponse.json(
+          { error: error.message },
+          { status: error.message.includes('not found') ? 404 : 400 }
+        )
+      }
+    }
+
+    logger.error('Withdrawal error - Internal server error', error as Error, {
+      ...requestContext,
+      duration
+    })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

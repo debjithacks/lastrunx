@@ -63,6 +63,25 @@ export async function POST(req: NextRequest) {
 
     const data = await req.json()
 
+    // Validate required fields
+    if (!data.game || !data.title || !data.image || 
+        data.entryFee === undefined || data.prizePool === undefined ||
+        !data.maxPlayers || !data.mode || !data.startTime) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
+    // Validate dates
+    const startTime = new Date(data.startTime)
+    if (startTime < new Date()) {
+      return NextResponse.json(
+        { error: 'Start time must be in the future' },
+        { status: 400 }
+      )
+    }
+
     const tournament = await prisma.tournament.create({
       data: {
         game: data.game,

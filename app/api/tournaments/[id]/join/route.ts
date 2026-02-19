@@ -1,129 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { joinTournamentTransaction } from '@/lib/transaction-manager'
+import { logger, extractRequestContext } from '@/lib/logger'
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const startTime = Date.now()
+  const requestContext = extractRequestContext(req)
+  
   try {
     const { id } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !session.user) {
+      logger.authEvent('Tournament join attempt - Unauthorized', false, requestContext)
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       )
     }
 
-    const tournament = await prisma.tournament.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            registrations: {
-              where: { paymentStatus: 'PAID' }
-            }
-          }
-        }
-      }
-    })
-
-    if (!tournament) {
-      return NextResponse.json(
-        { error: 'Tournament not found' },
-        { status: 404 }
-      )
+    const context = {
+      ...requestContext,
+      userId: session.user.id,
+      tournamentId: id,
+      action: 'JOIN_TOURNAMENT'
     }
 
-    // Check if tournament is full
-    if (tournament._count.registrations >= tournament.maxPlayers) {
-      return NextResponse.json(
-        { error: 'Tournament is full' },
-        { status: 400 }
-      )
-    }
+    logger.info('Tournament join attempt', context)
 
-    // Check if user already registered
-    const existingRegistration = await prisma.registration.findUnique({
-      where: {
-        userId_tournamentId: {
-          userId: session.user.id,
-          tournamentId: id
-        }
-      }
-    })
+    // Use transaction manager to prevent race conditions
+    const { registration, tournament } = await joinTournamentTransaction(
+      session.user.id,
+      id
+    )
 
-    if (existingRegistration) {
-      return NextResponse.json(
-        { error: 'Already registered for this tournament' },
-        { status: 400 }
-      )
-    }
-
-    // Check user wallet balance
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      )
-    }
-
-    if (user.walletBalance.lt(tournament.entryFee)) {
-      return NextResponse.json(
-        { error: 'Insufficient wallet balance' },
-        { status: 400 }
-      )
-    }
-
-    // Create registration and deduct from wallet
-    const registration = await prisma.$transaction(async (tx) => {
-      // Deduct entry fee from wallet
-      await tx.user.update({
-        where: { id: session.user.id },
-        data: {
-          walletBalance: {
-            decrement: tournament.entryFee
-          }
-        }
-      })
-
-      // Create transaction record
-      await tx.transaction.create({
-        data: {
-          userId: session.user.id,
-          type: 'TOURNAMENT_FEE',
-          amount: tournament.entryFee,
-          status: 'SUCCESS',
-          description: `Entry fee for ${tournament.title}`
-        }
-      })
-
-      // Create registration
-      return tx.registration.create({
-        data: {
-          userId: session.user.id,
-          tournamentId: id,
-          paymentStatus: 'PAID',
-          status: 'REGISTERED'
-        },
-        include: {
-          tournament: true,
-          user: {
-            select: {
-              id: true,
-              username: true,
-              email: true
-            }
-          }
-        }
-      })
+    const duration = Date.now() - startTime
+    logger.tournamentEvent('User joined tournament successfully', id, {
+      ...context,
+      registrationId: registration.id,
+      entryFee: Number(tournament.entryFee),
+      duration
     })
 
     return NextResponse.json(
@@ -134,7 +54,35 @@ export async function POST(
       { status: 201 }
     )
   } catch (error) {
-    console.error('Tournament join error:', error)
+    const duration = Date.now() - startTime
+    const { id } = await params
+    
+    if (error instanceof Error) {
+      // Business logic errors (tournament full, already registered, etc.)
+      if (error.message.includes('full') || 
+          error.message.includes('registered') || 
+          error.message.includes('Insufficient') ||
+          error.message.includes('Cannot join')) {
+        logger.warn('Tournament join failed - Business logic error', {
+          ...requestContext,
+          tournamentId: id,
+          error: error.message,
+          duration
+        })
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        )
+      }
+    }
+
+    // Unexpected errors
+    logger.error('Tournament join error - Internal server error', error as Error, {
+      ...requestContext,
+      tournamentId: id,
+      duration
+    })
+    
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
