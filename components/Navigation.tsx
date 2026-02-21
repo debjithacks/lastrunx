@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import {
   Menu,
   X,
@@ -100,7 +100,13 @@ export function Navigation() {
                       </div>
 
                       <div className="py-1 border-t border-slate-50">
-                        <button className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                        <button 
+                          onClick={() => {
+                            setProfileMenuOpen(false)
+                            signOut({ callbackUrl: '/' })
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        >
                           <LogOut className="w-4 h-4" />
                           Sign Out
                         </button>
@@ -164,6 +170,16 @@ export function Navigation() {
                   </div>
                   <MobileNavLink href="/profile" icon={<User className="w-4 h-4" />} text="My Profile" onClick={() => setMobileMenuOpen(false)} />
                   <MobileNavLink href="/wallet" icon={<Wallet className="w-4 h-4" />} text="Wallet" onClick={() => setMobileMenuOpen(false)} />
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      signOut({ callbackUrl: '/' })
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-base font-medium text-red-600 hover:bg-red-50 transition-all"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 px-2">
