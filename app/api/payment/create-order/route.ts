@@ -15,23 +15,43 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { amount } = await req.json()
+    const { amount, type, tournamentId } = await req.json()
 
-    if (!amount || amount < 100) {
+    // Convert amount to number if it's a string
+    const amountNum = Number(amount)
+
+    if (!amountNum || amountNum < 1 || isNaN(amountNum)) {
       return NextResponse.json(
-        { error: 'Minimum deposit amount is ₹100' },
+        { error: 'Invalid payment amount' },
         { status: 400 }
+      )
+    }
+
+    const paymentType = type || 'DEPOSIT'
+    // Razorpay receipt must be max 40 chars
+    const typeShort = paymentType === 'TOURNAMENT_FEE' ? 'TF' : 'DEP'
+    const userIdShort = session.user.id.slice(-8) // Last 8 chars of user ID
+    const timestamp = Date.now().toString().slice(-10) // Last 10 digits
+    const receipt = `${typeShort}_${userIdShort}_${timestamp}`
+
+    // Check if Razorpay is configured
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      console.error('Razorpay credentials not configured')
+      return NextResponse.json(
+        { error: 'Payment gateway not configured. Please contact support.' },
+        { status: 500 }
       )
     }
 
     // Create Razorpay order
     const order = await razorpay().orders.create({
-      amount: amount * 100, // Convert to paise
+      amount: Math.round(amountNum * 100), // Convert to paise and round
       currency: 'INR',
-      receipt: `deposit_${session.user.id}_${Date.now()}`,
+      receipt,
       notes: {
         userId: session.user.id,
-        type: 'DEPOSIT'
+        type: paymentType,
+        ...(tournamentId && { tournamentId })
       }
     })
 
@@ -39,11 +59,14 @@ export async function POST(req: NextRequest) {
     await prisma.transaction.create({
       data: {
         userId: session.user.id,
-        type: 'DEPOSIT',
-        amount: amount,
+        type: paymentType,
+        amount: amountNum,
         status: 'PENDING',
         razorpayOrderId: order.id,
-        description: `Wallet deposit of ₹${amount}`
+        description: paymentType === 'TOURNAMENT_FEE' 
+          ? `Tournament entry fee of ₹${amountNum}`
+          : `Wallet deposit of ₹${amountNum}`,
+        metadata: tournamentId ? { tournamentId } : undefined
       }
     })
 
@@ -55,8 +78,23 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     console.error('Create order error:', error)
+    if (error instanceof Error) {
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
+    
+    // Check if it's a Razorpay error
+    if (error && typeof error === 'object' && 'error' in error) {
+      const razorpayError = error as any
+      console.error('Razorpay error details:', razorpayError.error)
+      return NextResponse.json(
+        { error: razorpayError.error?.description || 'Failed to create payment order' },
+        { status: 500 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Failed to create payment order. Please try again or contact support.' },
       { status: 500 }
     )
   }
