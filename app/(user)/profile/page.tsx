@@ -48,8 +48,8 @@ export default function ProfilePage() {
       const response = await fetch('/api/user/profile')
       const data = await response.json()
 
-      if (response.ok) {
-        setProfile(data)
+      if (response.ok && data.user) {
+        setProfile(data.user)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
