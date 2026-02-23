@@ -1,5 +1,6 @@
 import { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from './prisma'
 import bcrypt from 'bcryptjs'
@@ -7,6 +8,10 @@ import bcrypt from 'bcryptjs'
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -19,7 +24,16 @@ export const authOptions: NextAuthOptions = {
         }
 
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email }
+          where: { email: credentials.email },
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            password: true,
+            role: true,
+            walletBalance: true,
+            isActive: true,
+          },
         })
 
         if (!user || !user.password) {
@@ -45,6 +59,7 @@ export const authOptions: NextAuthOptions = {
           username: user.username,
           role: user.role,
           walletBalance: user.walletBalance.toString(),
+          requires2FA: false,
         }
       }
     })
@@ -56,6 +71,7 @@ export const authOptions: NextAuthOptions = {
         token.username = user.username
         token.role = user.role
         token.walletBalance = user.walletBalance
+        token.requires2FA = user.requires2FA || false
       }
       return token
     },
@@ -65,6 +81,7 @@ export const authOptions: NextAuthOptions = {
         session.user.username = token.username as string
         session.user.role = token.role as string
         session.user.walletBalance = token.walletBalance as string
+        session.user.requires2FA = token.requires2FA as boolean
       }
       return session
     }

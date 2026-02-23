@@ -4,13 +4,13 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { logAdminActivity } from '@/lib/admin-utils'
 
-// PATCH /api/admin/tournaments/[tournamentId]/registrations/[regId] - Update registration
+// PATCH /api/admin/tournaments/[id]/registrations/[regId] - Update registration
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ tournamentId: string; regId: string }> }
+  { params }: { params: Promise<{ id: string; regId: string }> }
 ) {
   try {
-    const { tournamentId, regId } = await params
+    const { id: tournamentId, regId } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER'].includes(session.user.role)) {
@@ -113,13 +113,13 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/admin/tournaments/[tournamentId]/registrations/[regId] - Disqualify/kick participant
+// DELETE /api/admin/tournaments/[id]/registrations/[regId] - Disqualify/kick participant
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ tournamentId: string; regId: string }> }
+  { params }: { params: Promise<{ id: string; regId: string }> }
 ) {
   try {
-    const { tournamentId, regId } = await params
+    const { id: tournamentId, regId } = await params
     const session = await getServerSession(authOptions)
 
     if (!session || !['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER'].includes(session.user.role)) {
