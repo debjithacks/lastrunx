@@ -64,6 +64,7 @@ export async function executeTransaction<T>(
 export async function joinTournamentTransaction(
   userId: string,
   tournamentId: string,
+  paymentMethod: 'wallet' | 'online' = 'wallet',
   paymentId: string | null = null
 ) {
   return executeTransaction(async (tx) => {
@@ -111,7 +112,7 @@ export async function joinTournamentTransaction(
       throw new Error(`Cannot join ${tournament.status.toLowerCase()} tournament`)
     }
 
-    // Check user wallet balance
+    // Get user
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: { walletBalance: true }
@@ -121,38 +122,41 @@ export async function joinTournamentTransaction(
       throw new Error('User not found')
     }
 
-    if (Number(user.walletBalance) < Number(tournament.entryFee)) {
-      throw new Error('Insufficient wallet balance')
-    }
+    // Handle wallet payment
+    if (paymentMethod === 'wallet') {
+      if (Number(user.walletBalance) < Number(tournament.entryFee)) {
+        throw new Error('Insufficient wallet balance')
+      }
 
-    // Deduct entry fee from wallet
-    await tx.user.update({
-      where: { id: userId },
-      data: {
-        walletBalance: {
-          decrement: tournament.entryFee
+      // Deduct entry fee from wallet
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          walletBalance: {
+            decrement: tournament.entryFee
+          }
         }
-      }
-    })
+      })
 
-    // Create tournament fee transaction
-    await tx.transaction.create({
-      data: {
-        userId,
-        type: 'TOURNAMENT_FEE',
-        amount: tournament.entryFee,
-        status: 'SUCCESS',
-        description: `Entry fee for ${tournament.title}`,
-        metadata: { tournamentId }
-      }
-    })
+      // Create tournament fee transaction
+      await tx.transaction.create({
+        data: {
+          userId,
+          type: 'TOURNAMENT_FEE',
+          amount: tournament.entryFee,
+          status: 'SUCCESS',
+          description: `Entry fee for ${tournament.title}`,
+          metadata: { tournamentId }
+        }
+      })
+    }
 
     // Create registration
     const registration = await tx.registration.create({
       data: {
         userId,
         tournamentId,
-        paymentStatus: 'PAID',
+        paymentStatus: paymentMethod === 'wallet' ? 'PAID' : 'PENDING',
         paymentId
       }
     })
