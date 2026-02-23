@@ -227,6 +227,32 @@ enum TransactionStatus {
   REFUNDED
 }
 
+model Ad {
+  id              String      @id @default(cuid())
+  title           String
+  mediaUrl        String
+  mediaType       AdMediaType
+  placement       AdPlacement
+  redirectUrl     String?
+  openInNewTab    Boolean     @default(true)
+  priority        Int         @default(0)
+  isActive        Boolean     @default(true)
+  startDate       DateTime
+  expiryDate      DateTime
+  deviceTarget    DeviceTarget @default(ALL)
+  impressions     Int         @default(0)
+  clicks          Int         @default(0)
+  maxImpressions  Int?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([isActive])
+  @@index([placement])
+  @@index([startDate])
+  @@index([expiryDate])
+  @@index([priority])
+}
+
 model Coupon {
   id            String       @id @default(cuid())
   code          String       @unique
@@ -391,4 +417,21 @@ enum NotificationTarget {
   WALLET_BASED
   TOURNAMENT_PARTICIPANTS
   CUSTOM
+}
+
+enum AdMediaType {
+  IMAGE
+  VIDEO
+}
+
+enum AdPlacement {
+  HERO
+  BANNER
+  POPUP
+}
+
+enum DeviceTarget {
+  ALL
+  MOBILE
+  DESKTOP
 }
