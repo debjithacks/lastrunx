@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { FlaticonIcon } from '../FlaticonIcon'
 
 interface SidebarProps {
@@ -13,6 +14,8 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }: SidebarProps) {
     const pathname = usePathname()
+    const { data: session } = useSession()
+    const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN'
 
     const navigation = [
         { name: 'Dashboard', href: '/admin/dashboard', icon: 'dashboard' },
@@ -23,6 +26,11 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
         { name: 'Notifications', href: '/admin/notifications', icon: 'bell' },
         { name: 'Activity Logs', href: '/admin/logs', icon: 'file-user' },
         { name: 'Settings', href: '/admin/settings', icon: 'settings' },
+    ]
+
+    // SuperAdmin-only navigation items
+    const superAdminNavigation = [
+        { name: 'Ads Management', href: '/admin/ads', icon: 'megaphone' },
     ]
 
     return (
@@ -116,6 +124,57 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                             </div>
                         )
                     })}
+
+                    {/* SuperAdmin Only - Marketing Section */}
+                    {isSuperAdmin && (
+                        <>
+                            {!isCollapsed && (
+                                <div className="px-4 pt-6 pb-2">
+                                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Marketing</h3>
+                                </div>
+                            )}
+                            {superAdminNavigation.map((item) => {
+                                const isActive = pathname.startsWith(item.href)
+                                return (
+                                    <div key={item.name} className="relative group/item">
+                                        <Link
+                                            href={item.href}
+                                            className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${
+                                                isCollapsed ? 'px-3 justify-center' : 'px-4'
+                                            } ${
+                                                isActive
+                                                    ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/25'
+                                                    : 'text-slate-600 hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50 hover:text-slate-900'
+                                            }`}
+                                            title={isCollapsed ? item.name : ''}
+                                        >
+                                            <FlaticonIcon 
+                                                name={item.icon} 
+                                                style="bold" 
+                                                className={`text-lg transition-transform duration-200 ${
+                                                    isActive ? 'scale-110' : 'group-hover:scale-110'
+                                                }`}
+                                            />
+                                            {!isCollapsed && (
+                                                <span className="font-semibold whitespace-nowrap overflow-hidden">{item.name}</span>
+                                            )}
+                                            {isActive && !isCollapsed && (
+                                                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white/30 rounded-l-full" />
+                                            )}
+                                        </Link>
+                                        
+                                        {/* Tooltip on hover when collapsed */}
+                                        {isCollapsed && (
+                                            <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-3 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg shadow-xl shadow-slate-900/30 opacity-0 invisible group-hover/item:opacity-100 group-hover/item:visible transition-all duration-200 pointer-events-none whitespace-nowrap z-50">
+                                                {item.name}
+                                                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900"></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )
+                            })}
+                        </>
+                    )}
                 </nav>
 
                 {/* Footer */}
