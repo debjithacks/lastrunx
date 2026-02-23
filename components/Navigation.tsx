@@ -72,28 +72,30 @@ export function Navigation() {
                 <div className="relative" ref={dropdownRef}>
                   <button
                     onClick={() => setProfileMenuOpen(!profileMenuOpen)}
-                    className="flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-full hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
                   >
-                    <div className="flex flex-col items-end mr-1">
-                      <span className="text-xs font-medium text-slate-500">Balance</span>
-                      <span className="text-sm font-bold text-slate-900">₹{parseFloat(session.user.walletBalance || '0').toFixed(2)}</span>
-                    </div>
                     <div className="w-9 h-9 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center font-bold text-sm border border-blue-200">
                       {session.user.username?.charAt(0).toUpperCase() || session.user.email?.charAt(0).toUpperCase()}
                     </div>
+                    <span className="text-sm font-medium text-slate-900">{session.user.username || 'User'}</span>
                     <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${profileMenuOpen ? 'rotate-180' : ''}`} />
                   </button>
 
                   {/* Profile Dropdown */}
                   {profileMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 py-2 animate-fade-in overflow-hidden ring-1 ring-black/5">
-                      <div className="px-4 py-3 border-b border-slate-50">
+                      <div className="px-4 py-3 border-b border-slate-100">
                         <p className="text-sm font-medium text-slate-900 truncate">{session.user.username}</p>
-                        <p className="text-xs text-slate-500 truncate">{session.user.email}</p>
+                        <p className="text-xs text-slate-500 truncate mb-2">{session.user.email}</p>
+                        <div className="flex items-center justify-between px-2 py-1.5 bg-green-50 rounded-lg">
+                          <span className="text-xs font-medium text-green-700">Wallet Balance</span>
+                          <span className="text-sm font-bold text-green-700">₹{parseFloat(session.user.walletBalance || '0').toFixed(2)}</span>
+                        </div>
                       </div>
 
                       <div className="py-1">
                         <DropdownLink href="/profile" icon={<User className="w-4 h-4" />} text="My Profile" onClick={() => setProfileMenuOpen(false)} />
+                        <DropdownLink href="/my-tournaments" icon={<Trophy className="w-4 h-4" />} text="My Tournaments" onClick={() => setProfileMenuOpen(false)} />
                         <DropdownLink href="/wallet" icon={<Wallet className="w-4 h-4" />} text="Wallet" onClick={() => setProfileMenuOpen(false)} />
                         <DropdownLink href="/user/stats" icon={<BarChart2 className="w-4 h-4" />} text="My Stats" onClick={() => setProfileMenuOpen(false)} />
                         <DropdownLink href="/settings" icon={<Settings className="w-4 h-4" />} text="Settings" onClick={() => setProfileMenuOpen(false)} />
