@@ -40,6 +40,28 @@ async function main() {
   })
   console.log('✅ Created Tournament Manager:', tournamentManager.email)
 
+  // Create Demo User for testing
+  console.log('👤 Creating demo user...')
+  
+  const demoPassword = await bcrypt.hash('demo123', 10)
+  
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@lastrunx.in' },
+    update: {
+      walletBalance: 10000, // Update balance if user exists
+    },
+    create: {
+      email: 'demo@lastrunx.in',
+      username: 'demouser',
+      password: demoPassword,
+      role: 'USER',
+      isActive: true,
+      phoneVerified: true,
+      walletBalance: 10000, // ₹10,000 for testing
+    },
+  })
+  console.log('✅ Created Demo User:', demoUser.email)
+
   // Create some test users
   console.log('👥 Creating test users...')
   
@@ -61,18 +83,16 @@ async function main() {
   }
   console.log('✅ Created 5 test users')
 
-  // Create sample tournament
-  console.log('🏆 Creating sample tournament...')
+  // Create sample tournaments
+  console.log('🏆 Creating sample tournaments...')
   
-  const tournament = await prisma.tournament.upsert({
-    where: { id: 'sample-tournament-1' },
-    update: {},
-    create: {
+  const tournaments = [
+    {
       id: 'sample-tournament-1',
       title: 'BGMI Championship 2026',
       game: 'BGMI',
       description: 'Join the biggest BGMI tournament of the year! Compete for amazing prizes.',
-      image: '/images/tournaments/bgmi-banner.jpg',
+      image: '/images/games/bgmi.avif',
       entryFee: 100,
       prizePool: 50000,
       maxPlayers: 100,
@@ -93,8 +113,149 @@ async function main() {
         { position: 3, amount: 10000 },
       ]),
     },
-  })
-  console.log('✅ Created sample tournament:', tournament.title)
+    {
+      id: 'tournament-ff-2',
+      title: 'Free Fire Max Squad Battle',
+      game: 'Free Fire Max',
+      description: 'Ultimate squad showdown! Form your team and dominate.',
+      image: '/images/games/ff-max.jpg',
+      entryFee: 50,
+      prizePool: 25000,
+      maxPlayers: 48,
+      minPlayers: 12,
+      mode: 'SQUAD',
+      startTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+      endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000),
+      status: 'UPCOMING',
+      rules: JSON.stringify({
+        teamSize: 4,
+        map: 'Bermuda',
+        mode: 'Squad',
+        rounds: 2,
+      }),
+      prizeDistribution: JSON.stringify([
+        { position: 1, amount: 12000 },
+        { position: 2, amount: 8000 },
+        { position: 3, amount: 5000 },
+      ]),
+    },
+    {
+      id: 'tournament-cod-3',
+      title: 'COD Mobile Battle Royale',
+      game: 'COD Mobile',
+      description: 'Intense battle royale action. Prove your skills!',
+      image: '/images/games/codm.webp',
+      entryFee: 75,
+      prizePool: 35000,
+      maxPlayers: 80,
+      minPlayers: 20,
+      mode: 'SOLO',
+      startTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+      endTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000),
+      status: 'UPCOMING',
+      rules: JSON.stringify({
+        teamSize: 1,
+        map: 'Isolated',
+        mode: 'BR',
+        rounds: 3,
+      }),
+      prizeDistribution: JSON.stringify([
+        { position: 1, amount: 18000 },
+        { position: 2, amount: 10000 },
+        { position: 3, amount: 7000 },
+      ]),
+    },
+    {
+      id: 'tournament-ml-4',
+      title: 'Mobile Legends 5v5 Cup',
+      game: 'Mobile Legends',
+      description: '5v5 MOBA tournament. Strategy meets action!',
+      image: '/images/games/mlbb.jpg',
+      entryFee: 200,
+      prizePool: 100000,
+      maxPlayers: 10,
+      minPlayers: 10,
+      mode: 'SQUAD',
+      startTime: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
+      endTime: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000 + 5 * 60 * 60 * 1000),
+      status: 'UPCOMING',
+      rules: JSON.stringify({
+        teamSize: 5,
+        map: 'Classic',
+        mode: '5v5',
+        rounds: 1,
+      }),
+      prizeDistribution: JSON.stringify([
+        { position: 1, amount: 60000 },
+        { position: 2, amount: 40000 },
+      ]),
+    },
+    {
+      id: 'tournament-cr-5',
+      title: 'Clash Royale 1v1 Arena',
+      game: 'Clash Royale',
+      description: 'Test your deck strategy in intense 1v1 matches.',
+      image: '/images/games/clashroyale.webp',
+      entryFee: 25,
+      prizePool: 10000,
+      maxPlayers: 32,
+      minPlayers: 8,
+      mode: 'SOLO',
+      startTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+      endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 2 * 60 * 60 * 1000),
+      status: 'UPCOMING',
+      rules: JSON.stringify({
+        teamSize: 1,
+        arenaLevel: '5000+',
+        mode: '1v1',
+        rounds: 'Best of 3',
+      }),
+      prizeDistribution: JSON.stringify([
+        { position: 1, amount: 5000 },
+        { position: 2, amount: 3000 },
+        { position: 3, amount: 2000 },
+      ]),
+    },
+    {
+      id: 'tournament-bgmi-6',
+      title: 'BGMI Quick Match',
+      game: 'BGMI',
+      description: 'Fast-paced BGMI action. Quick rewards!',
+      image: '/images/games/bgmi.avif',
+      entryFee: 30,
+      prizePool: 8000,
+      maxPlayers: 60,
+      minPlayers: 20,
+      mode: 'SOLO',
+      startTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // 1 day from now
+      endTime: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000 + 1 * 60 * 60 * 1000),
+      status: 'UPCOMING',
+      rules: JSON.stringify({
+        teamSize: 1,
+        map: 'Sanhok',
+        mode: 'TPP',
+        rounds: 1,
+      }),
+      prizeDistribution: JSON.stringify([
+        { position: 1, amount: 4000 },
+        { position: 2, amount: 2500 },
+        { position: 3, amount: 1500 },
+      ]),
+    },
+  ]
+
+  for (const tournamentData of tournaments) {
+    await prisma.tournament.upsert({
+      where: { id: tournamentData.id },
+      update: {
+        image: tournamentData.image,
+        title: tournamentData.title,
+        description: tournamentData.description,
+      },
+      create: tournamentData as any,
+    })
+    console.log(`✅ Created/Updated tournament: ${tournamentData.title}`)
+  }
 
   // Create sample ads
   console.log('📢 Creating sample ads...')
@@ -135,6 +296,11 @@ async function main() {
   }
 
   console.log('🎉 Seeding completed successfully!')
+  console.log('\n🎮 DEMO USER CREDENTIALS (For Testing):')
+  console.log('   Email: demo@lastrunx.in')
+  console.log('   Password: demo123')
+  console.log('   Wallet Balance: ₹10,000')
+  console.log('   Use this account to test tournament joining!')
   console.log('\n📋 Admin Credentials:')
   console.log('   Email: admin@lastrunx.in')
   console.log('   Password: admin123')
