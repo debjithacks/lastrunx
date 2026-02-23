@@ -32,10 +32,17 @@ export async function POST(
 
     logger.info('Tournament join attempt', context)
 
+    // Get payment method from request body
+    const body = await req.json()
+    const paymentMethod = body.paymentMethod || 'wallet'
+    const paymentId = body.paymentId || null
+
     // Use transaction manager to prevent race conditions
     const { registration, tournament } = await joinTournamentTransaction(
       session.user.id,
-      id
+      id,
+      paymentMethod,
+      paymentId
     )
 
     const duration = Date.now() - startTime
