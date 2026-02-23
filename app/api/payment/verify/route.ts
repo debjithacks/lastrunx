@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { joinTournamentTransaction } from '@/lib/transaction-manager'
 import crypto from 'crypto'
 
 export async function POST(req: NextRequest) {
@@ -46,7 +47,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Update transaction and wallet in a transaction
+    // Update transaction and add to wallet in a transaction
     await prisma.$transaction(async (tx) => {
       // Update transaction status
       await tx.transaction.update({
@@ -58,20 +59,43 @@ export async function POST(req: NextRequest) {
         }
       })
 
-      // Add to wallet
-      await tx.user.update({
-        where: { id: session.user.id },
-        data: {
-          walletBalance: {
-            increment: transaction.amount
+      // If DEPOSIT, add to wallet
+      if (transaction.type === 'DEPOSIT') {
+        await tx.user.update({
+          where: { id: session.user.id },
+          data: {
+            walletBalance: {
+              increment: transaction.amount
+            }
           }
-        }
-      })
+        })
+      }
     })
+
+    // If TOURNAMENT_FEE, join the tournament
+    if (transaction.type === 'TOURNAMENT_FEE' && transaction.metadata && 'tournamentId' in transaction.metadata) {
+      const tournamentId = (transaction.metadata as { tournamentId: string }).tournamentId
+      
+      try {
+        await joinTournamentTransaction(
+          session.user.id,
+          tournamentId,
+          'online',
+          razorpay_payment_id
+        )
+      } catch (error) {
+        console.error('Tournament join error after payment:', error)
+        return NextResponse.json(
+          { error: error instanceof Error ? error.message : 'Failed to join tournament after payment' },
+          { status: 400 }
+        )
+      }
+    }
 
     return NextResponse.json({
       message: 'Payment verified successfully',
-      amount: transaction.amount
+      amount: transaction.amount,
+      type: transaction.type
     })
   } catch (error) {
     console.error('Payment verification error:', error)
