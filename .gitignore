@@ -49,6 +49,20 @@ next-env.d.ts
 # Sensitive files
 .env.local
 .env.production
+
+# Scripts with sensitive data
+scripts/check-admins.js
+scripts/test-login.js
+scripts/create-admin.js
+scripts/find-admin.js
+
+# Uploads directory (user-generated content)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Debug routes
+app/api/debug/
+.env.production
 .env.development
 
 # IDE
