@@ -195,7 +195,12 @@ export default function LoginPage() {
 
           {/* Social Login */}
           <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm">
+            <button 
+              type="button"
+              onClick={() => signIn('google', { callbackUrl: '/' })}
+              disabled={isLoading}
+              className="flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -204,12 +209,15 @@ export default function LoginPage() {
               </svg>
               Google
             </button>
-            <button className="flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm">
+            <Link 
+              href="/login/phone"
+              className="flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
               </svg>
               Phone
-            </button>
+            </Link>
           </div>
 
           {/* Sign Up Link */}

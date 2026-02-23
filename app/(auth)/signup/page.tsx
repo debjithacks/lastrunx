@@ -1,10 +1,28 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { signIn } from 'next-auth/react'
 import { FlaticonIcon } from '@/components/FlaticonIcon'
 
+// Country codes with validation rules
+const countryCodes = [
+  { id: 'IN', code: '+91', country: 'India', flag: '🇮🇳', length: 10, startsWithAny: ['6', '7', '8', '9'] },
+  { id: 'US', code: '+1', country: 'USA', flag: '🇺🇸', length: 10, startsWithAny: ['2', '3', '4', '5', '6', '7', '8', '9'] },
+  { id: 'CA', code: '+1', country: 'Canada', flag: '🇨🇦', length: 10, startsWithAny: ['2', '3', '4', '5', '6', '7', '8', '9'] },
+  { id: 'GB', code: '+44', country: 'UK', flag: '🇬🇧', length: 10, startsWithAny: ['7', '1', '2'] },
+  { id: 'AE', code: '+971', country: 'UAE', flag: '🇦🇪', length: 9, startsWithAny: ['5'] },
+  { id: 'AU', code: '+61', country: 'Australia', flag: '🇦🇺', length: 9, startsWithAny: ['4'] },
+  { id: 'CN', code: '+86', country: 'China', flag: '🇨🇳', length: 11, startsWithAny: ['1', '3', '4', '5', '6', '7', '8', '9'] },
+  { id: 'JP', code: '+81', country: 'Japan', flag: '🇯🇵', length: 10, startsWithAny: ['7', '8', '9'] },
+  { id: 'KR', code: '+82', country: 'South Korea', flag: '🇰🇷', length: 10, startsWithAny: ['1'] },
+  { id: 'SG', code: '+65', country: 'Singapore', flag: '🇸🇬', length: 8, startsWithAny: ['8', '9'] },
+]
+
 export default function SignupPage() {
+  const [selectedCountry, setSelectedCountry] = useState(countryCodes[0])
+  const [phoneDigits, setPhoneDigits] = useState('')
+  const [isValidPhone, setIsValidPhone] = useState(false)
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -17,6 +35,70 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
+
+  // Auto-detect country based on timezone
+  useEffect(() => {
+    try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+      const timezoneMap: Record<string, string> = {
+        'Asia/Kolkata': 'IN',
+        'Asia/Calcutta': 'IN',
+        'America/New_York': 'US',
+        'America/Los_Angeles': 'US',
+        'America/Chicago': 'US',
+        'America/Denver': 'US',
+        'America/Phoenix': 'US',
+        'America/Toronto': 'CA',
+        'America/Vancouver': 'CA',
+        'America/Montreal': 'CA',
+        'Europe/London': 'GB',
+        'Asia/Dubai': 'AE',
+        'Australia/Sydney': 'AU',
+        'Australia/Melbourne': 'AU',
+        'Asia/Shanghai': 'CN',
+        'Asia/Tokyo': 'JP',
+        'Asia/Seoul': 'KR',
+        'Asia/Singapore': 'SG',
+      }
+      
+      const detectedId = timezoneMap[timezone]
+      if (detectedId) {
+        const country = countryCodes.find(c => c.id === detectedId)
+        if (country) {
+          setSelectedCountry(country)
+        }
+      }
+    } catch (error) {
+      console.log('Timezone detection failed, using default')
+    }
+  }, [])
+
+  // Validate phone number and update formData
+  useEffect(() => {
+    if (!phoneDigits) {
+      setIsValidPhone(false)
+      setFormData(prev => ({ ...prev, phone: '' }))
+      return
+    }
+
+    const isCorrectLength = phoneDigits.length === selectedCountry.length
+    
+    if (!isCorrectLength) {
+      setIsValidPhone(false)
+      return
+    }
+
+    // Validate first digit matches country requirements
+    const firstDigit = phoneDigits.charAt(0)
+    const isValidFirstDigit = selectedCountry.startsWithAny.includes(firstDigit)
+    
+    setIsValidPhone(isValidFirstDigit)
+
+    // Update formData with full phone number including country code
+    if (isValidFirstDigit) {
+      setFormData(prev => ({ ...prev, phone: `${selectedCountry.code}${phoneDigits}` }))
+    }
+  }, [phoneDigits, selectedCountry])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -169,23 +251,71 @@ export default function SignupPage() {
             {/* Phone Field */}
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1.5">
-                Phone Number
+                Your Number
               </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <FlaticonIcon name="mobile" style="regular" className="text-lg" />
-                </span>
+              <div className="relative flex items-stretch rounded-xl border border-slate-200 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all overflow-hidden bg-white">
+                {/* Country Code Dropdown */}
+                <div className="relative">
+                  <select
+                    id="country"
+                    value={selectedCountry.id}
+                    onChange={(e) => {
+                      const country = countryCodes.find(c => c.id === e.target.value)
+                      if (country) {
+                        setSelectedCountry(country)
+                        setPhoneDigits('') // Reset phone when country changes
+                      }
+                    }}
+                    className="h-full pl-3 pr-8 py-2.5 text-base font-medium text-slate-700 bg-slate-50 border-r border-slate-200 outline-none cursor-pointer appearance-none hover:bg-slate-100 transition-colors"
+                    style={{ minWidth: '85px' }}
+                  >
+                    {countryCodes.map((country) => (
+                      <option key={country.id} value={country.id}>
+                        {country.flag} {country.code}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Phone Number Input */}
                 <input
                   type="tel"
                   id="phone"
                   name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
+                  value={phoneDigits}
+                  onChange={(e) => setPhoneDigits(e.target.value.replace(/\D/g, ''))}
+                  maxLength={selectedCountry.length}
                   required
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none text-slate-900 font-medium placeholder:text-slate-400"
-                  placeholder="+91 98765 43210"
+                  className="flex-1 px-3 py-2.5 outline-none text-slate-900 font-medium placeholder:text-slate-400"
+                  placeholder={`${'0'.repeat(selectedCountry.length)}`}
                 />
+
+                {/* Validation Checkmark */}
+                {isValidPhone && (
+                  <div className="flex items-center pr-3 text-green-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-5 h-5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                )}
               </div>
+              <p className="text-xs text-slate-500 mt-1.5">
+                Enter {selectedCountry.length} digits
+                {phoneDigits.length > 0 && !isValidPhone && (
+                  <span className="text-orange-500 ml-2">
+                    {phoneDigits.length < selectedCountry.length ? (
+                      <>• {selectedCountry.length - phoneDigits.length} more digit{selectedCountry.length - phoneDigits.length !== 1 ? 's' : ''} needed</>
+                    ) : (
+                      <span className="block text-red-500">Invalid number. Must start with {selectedCountry.startsWithAny.join(', ')}</span>
+                    )}
+                  </span>
+                )}
+              </p>
             </div>
 
             {/* Password Field */}
@@ -323,7 +453,12 @@ export default function SignupPage() {
 
           {/* Social Signup */}
           <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm">
+            <button 
+              type="button"
+              onClick={() => signIn('google', { callbackUrl: '/' })}
+              disabled={isLoading}
+              className="flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
@@ -332,12 +467,15 @@ export default function SignupPage() {
               </svg>
               Google
             </button>
-            <button className="flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm">
+            <Link 
+              href="/login/phone"
+              className="flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-all text-sm"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
               </svg>
               Phone
-            </button>
+            </Link>
           </div>
 
           {/* Login Link */}

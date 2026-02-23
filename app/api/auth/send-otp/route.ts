@@ -2,14 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { generateOTP, storeOTP, sendSMS } from '@/lib/otp'
 
+// Valid country codes
+const validCountryCodes = ['+91', '+1', '+44', '+971', '+61', '+86', '+81', '+82', '+65']
+
 // POST /api/auth/send-otp - Send OTP to phone
 export async function POST(req: NextRequest) {
   try {
     const { phone } = await req.json()
 
-    if (!phone || !/^\d{10}$/.test(phone)) {
+    // Validate phone format with country code (e.g., +91xxxxxxxxxx)
+    if (!phone || !/^\+\d{1,4}\d{8,11}$/.test(phone)) {
       return NextResponse.json(
-        { error: 'Invalid phone number. Must be 10 digits.' },
+        { error: 'Invalid phone number format. Must include country code (e.g., +911234567890)' },
+        { status: 400 }
+      )
+    }
+
+    // Extract and validate country code
+    const countryCode = validCountryCodes.find(code => phone.startsWith(code))
+    if (!countryCode) {
+      return NextResponse.json(
+        { error: 'Unsupported country code' },
         { status: 400 }
       )
     }
@@ -38,7 +51,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       message: 'OTP sent successfully',
-      phone: phone.replace(/(\d{6})/, '******'),
+      phone: phone.slice(0, -6) + '******', // Mask last 6 digits
     })
   } catch (error) {
     console.error('Send OTP error:', error)

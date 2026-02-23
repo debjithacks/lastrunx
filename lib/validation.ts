@@ -23,7 +23,7 @@ export const registerSchema = z.object({
     .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
     .regex(/[0-9]/, 'Password must contain at least one number'),
   phone: z.string()
-    .regex(/^[6-9]\d{9}$/, 'Invalid Indian phone number')
+    .regex(/^\+\d{1,4}\d{8,11}$/, 'Invalid phone number format. Must include country code (e.g., +911234567890)')
     .optional()
     .or(z.literal('')),
   referralCode: z.string()
@@ -51,7 +51,7 @@ export const resetPasswordSchema = z.object({
 })
 
 export const otpSchema = z.object({
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid Indian phone number'),
+  phone: z.string().regex(/^\+\d{1,4}\d{8,11}$/, 'Invalid phone number format. Must include country code'),
   otp: z.string().regex(/^\d{6}$/, 'OTP must be 6 digits').optional()
 })
 
@@ -125,7 +125,7 @@ export const submitResultsSchema = z.object({
 
 export const updateProfileSchema = z.object({
   username: z.string().min(3).max(20).regex(/^[a-zA-Z0-9_]+$/).trim().optional(),
-  phone: z.string().regex(/^[6-9]\d{9}$/).optional()
+  phone: z.string().regex(/^\+\d{1,4}\d{8,11}$/, 'Invalid phone number format. Must include country code').optional()
 })
 
 export const kycSchema = z.object({

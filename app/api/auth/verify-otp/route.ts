@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       message: 'Phone verified successfully',
       user: {
         id: user.id,
+        email: user.email,
         phone: user.phone,
         phoneVerified: user.phoneVerified,
       },
