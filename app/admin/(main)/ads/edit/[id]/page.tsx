@@ -100,8 +100,8 @@ export default function EditAdPage() {
       return
     }
 
-    if (isVideo && file.size > 1 * 1024 * 1024) {
-      setError('Video size must be less than 1MB (use WebM format, max 7 seconds)')
+    if (isVideo && file.size > 2 * 1024 * 1024) {
+      setError('Video size must be less than 2MB (use WebM format, max 10 seconds)')
       return
     }
 

@@ -101,12 +101,17 @@ export default function AdsManagementPage() {
         method: 'DELETE',
       })
 
+      const data = await res.json()
+
       if (res.ok) {
         setDeleteModalId(null)
         fetchAds()
+      } else {
+        alert(data.error || 'Failed to delete ad')
       }
     } catch (error) {
       console.error('Delete ad error:', error)
+      alert('Failed to delete ad. Please try again.')
     }
   }
 
