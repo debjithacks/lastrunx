@@ -4,10 +4,10 @@ import { prisma } from '@/lib/prisma'
 // POST /api/admin/ads/[id]/track - Track impressions/clicks
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await req.json()
     const { type } = body // 'impression' or 'click'
 

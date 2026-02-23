@@ -6,7 +6,7 @@ import { prisma } from '@/lib/prisma'
 // PATCH /api/admin/ads/[id] - Update ad
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -15,7 +15,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
     const body = await req.json()
 
     const existing = await prisma.ad.findUnique({
@@ -73,7 +73,7 @@ export async function PATCH(
 // DELETE /api/admin/ads/[id] - Delete ad
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -82,7 +82,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
 
     const existing = await prisma.ad.findUnique({
       where: { id },
