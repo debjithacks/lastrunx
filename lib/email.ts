@@ -1,34 +1,21 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-// Create reusable transporter
-const getTransporter = () => {
-  if (!process.env.SMTP_HOST) {
-    console.warn('⚠️ SMTP not configured, emails will be logged only')
-    return null
-  }
-
-  return nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: false,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASSWORD,
-    },
-  })
-}
+// Initialize Resend client
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function sendEmail(to: string, subject: string, html: string) {
-  const transporter = getTransporter()
-  
-  if (!transporter) {
-    console.log(`📧 Email to ${to}:`, { subject, html })
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('⚠️ Resend API Key not configured, emails will be logged only')
+    console.log(`📧 Email to ${to}:`, { subject, html: html.substring(0, 200) + '...' })
     return
   }
 
   try {
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM || 'SkillArena <noreply@skillarena.com>',
+    const fromEmail = process.env.FROM_EMAIL || 'onboarding@resend.dev'
+    const fromName = process.env.FROM_NAME || 'LastRunx'
+    
+    await resend.emails.send({
+      from: `${fromName} <${fromEmail}>`,
       to,
       subject,
       html,
@@ -55,20 +42,20 @@ export async function sendPasswordResetEmail(email: string, resetLink: string) {
     <body>
       <div class="container">
         <h2>Password Reset Request</h2>
-        <p>You requested to reset your password for your SkillArena account.</p>
+        <p>You requested to reset your password for your LastRunx account.</p>
         <p>Click the button below to reset your password:</p>
         <a href="${resetLink}" class="button">Reset Password</a>
         <p>Or copy this link: <a href="${resetLink}">${resetLink}</a></p>
         <p><strong>This link will expire in 1 hour.</strong></p>
         <p>If you didn't request this, please ignore this email and your password will remain unchanged.</p>
         <div class="footer">
-          <p>This is an automated email from SkillArena. Please do not reply.</p>
+          <p>This is an automated email from LastRunx. Please do not reply.</p>
         </div>
       </div>
     </body>
     </html>
   `
-  await sendEmail(email, 'Password Reset Request - SkillArena', html)
+  await sendEmail(email, 'Password Reset Request - LastRunx', html)
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {
@@ -85,9 +72,9 @@ export async function sendWelcomeEmail(email: string, name: string) {
     </head>
     <body>
       <div class="container">
-        <h2>🎮 Welcome to SkillArena!</h2>
+        <h2>🎮 Welcome to LastRunx!</h2>
         <p>Hi <strong>${name}</strong>,</p>
-        <p>Thank you for joining SkillArena, the premier skill-based gaming tournament platform!</p>
+        <p>Thank you for joining LastRunx, the premier skill-based gaming tournament platform!</p>
         <div class="highlight">
           <p><strong>Get Started:</strong></p>
           <ul>
@@ -98,12 +85,12 @@ export async function sendWelcomeEmail(email: string, name: string) {
         </div>
         <a href="${process.env.NEXT_PUBLIC_APP_URL}/tournaments" class="button">Browse Tournaments</a>
         <p>Happy Gaming!</p>
-        <p>Team SkillArena</p>
+        <p>Team LastRunx</p>
       </div>
     </body>
     </html>
   `
-  await sendEmail(email, 'Welcome to SkillArena! 🎮', html)
+  await sendEmail(email, 'Welcome to LastRunx! 🎮', html)
 }
 
 export async function sendKYCVerificationEmail(email: string, name: string, status: 'approved' | 'rejected', remarks?: string) {
@@ -136,12 +123,12 @@ export async function sendKYCVerificationEmail(email: string, name: string, stat
           ? `<a href="${process.env.NEXT_PUBLIC_APP_URL}/profile" class="button">View Profile</a>`
           : `<a href="${process.env.NEXT_PUBLIC_APP_URL}/profile" class="button">Re-submit KYC</a>`
         }
-        <p>Team SkillArena</p>
+        <p>Team LastRunx</p>
       </div>
     </body>
     </html>
   `
-  await sendEmail(email, `KYC Verification ${isApproved ? 'Approved' : 'Rejected'} - SkillArena`, html)
+  await sendEmail(email, `KYC Verification ${isApproved ? 'Approved' : 'Rejected'} - LastRunx`, html)
 }
 
 export async function sendWithdrawalStatusEmail(email: string, name: string, amount: number, status: 'approved' | 'rejected', remarks?: string) {
@@ -171,10 +158,10 @@ export async function sendWithdrawalStatusEmail(email: string, name: string, amo
             : remarks || 'Please contact support for more information.'
           }</p>
         </div>
-        <p>Team SkillArena</p>
+        <p>Team LastRunx</p>
       </div>
     </body>
     </html>
   `
-  await sendEmail(email, `Withdrawal ${isApproved ? 'Approved' : 'Rejected'} - SkillArena`, html)
+  await sendEmail(email, `Withdrawal ${isApproved ? 'Approved' : 'Rejected'} - LastRunx`, html)
 }
