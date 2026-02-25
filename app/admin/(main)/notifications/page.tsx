@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, Send, Users, CheckCircle, MessageSquare, Plus } from 'lucide-react'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 interface NotificationTemplate {
   id: string
@@ -21,6 +22,7 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true)
   const [showSendModal, setShowSendModal] = useState(false)
   const [sending, setSending] = useState(false)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', type: 'info' as 'success' | 'error' | 'warning' | 'info' })
 
   const [formData, setFormData] = useState({
     title: '',
@@ -41,10 +43,30 @@ export default function NotificationsPage() {
     setLoading(true)
     try {
       const res = await fetch('/api/admin/notifications/templates')
+      
+      if (!res.ok) {
+        console.error('API error:', res.status)
+        setTemplates([])
+        return
+      }
+      
       const data = await res.json()
-      setTemplates(data)
+      
+      if (data.error) {
+        console.error('API returned error:', data.error)
+        setTemplates([])
+        return
+      }
+      
+      if (Array.isArray(data)) {
+        setTemplates(data)
+      } else {
+        console.error('Invalid data format:', data)
+        setTemplates([])
+      }
     } catch (error) {
       console.error('Failed to fetch templates:', error)
+      setTemplates([])
     } finally {
       setLoading(false)
     }
@@ -62,7 +84,7 @@ export default function NotificationsPage() {
 
       if (res.ok) {
         const result = await res.json()
-        alert(`Notification sent to ${result.totalSent} users`)
+        setConfirmModal({ isOpen: true, message: `Notification sent to ${result.totalSent} users`, type: 'success' })
         setShowSendModal(false)
         setFormData({
           title: '',
@@ -92,31 +114,28 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-indigo-500/10 rounded-3xl blur-3xl -z-10"></div>
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl shadow-lg">
-              <Bell className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Notifications</h1>
-              <p className="text-slate-600 text-sm mt-0.5">Send notifications to users</p>
-            </div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white rounded-lg border border-slate-200">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-600 rounded-lg">
+            <Bell className="w-6 h-6 text-white" />
           </div>
-          
-          <button
-            onClick={() => setShowSendModal(true)}
-            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-700 transition-all shadow-lg shadow-cyan-500/30 flex items-center gap-2"
-          >
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Notifications</h1>
+            <p className="text-slate-600 text-sm mt-0.5">Send notifications to users</p>
+          </div>
+        </div>
+        
+        <button
+          onClick={() => setShowSendModal(true)}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
             <Send className="w-5 h-5" />
             Send Notification
           </button>
-        </div>
       </div>
 
       {/* Templates Grid */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <div className="bg-white rounded-lg border border-slate-200 p-6">
         <div className="flex items-center gap-3 mb-6">
           <MessageSquare className="w-6 h-6 text-cyan-600" />
           <h2 className="text-xl font-bold text-slate-900">Templates</h2>
@@ -243,6 +262,14 @@ export default function NotificationsPage() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        message={confirmModal.message}
+        type={confirmModal.type}
+      />
     </div>
   )
 }

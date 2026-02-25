@@ -6,6 +6,7 @@ import {
   TrendingUp, Filter, MoreVertical, Eye, Ban, CheckCircle, XCircle,
   Calendar, Trophy, CreditCard
 } from 'lucide-react'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 interface User {
   id: string
@@ -28,11 +29,13 @@ interface User {
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [showFineModal, setShowFineModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [fineData, setFineData] = useState({ amount: '', reason: '' })
   const [filter, setFilter] = useState<'all' | 'verified' | 'pending'>('all')
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', type: 'info' as 'success' | 'error' | 'warning' | 'info' })
 
   useEffect(() => {
     fetchUsers()
@@ -40,11 +43,42 @@ export default function AdminUsersPage() {
 
   const fetchUsers = async () => {
     try {
+      setError(null)
       const res = await fetch('/api/admin/users')
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        const errorMsg = errorData.error || `API error: ${res.status} ${res.statusText}`
+        console.error('API error:', errorMsg)
+        setError(errorMsg)
+        setUsers([])
+        return
+      }
+      
       const data = await res.json()
-      setUsers(data)
+      
+      // Check if response has error field
+      if (data.error) {
+        console.error('API returned error:', data.error)
+        setError(data.error)
+        setUsers([])
+        return
+      }
+      
+      // Ensure data is an array before setting
+      if (Array.isArray(data)) {
+        setUsers(data)
+        setError(null)
+      } else {
+        console.error('Invalid data format:', data)
+        setError('Invalid data format received from server')
+        setUsers([])
+      }
     } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Failed to fetch users'
       console.error('Failed to fetch users:', error)
+      setError(errorMsg)
+      setUsers([])
     } finally {
       setLoading(false)
     }
@@ -63,13 +97,13 @@ export default function AdminUsersPage() {
       setShowFineModal(false)
       setFineData({ amount: '', reason: '' })
       fetchUsers()
-      alert('Fine issued successfully')
+      setConfirmModal({ isOpen: true, message: 'Fine issued successfully', type: 'success' })
     } catch (error) {
-      alert('Failed to issue fine')
+      setConfirmModal({ isOpen: true, message: 'Failed to issue fine', type: 'error' })
     }
   }
 
-  const filteredUsers = users
+  const filteredUsers = Array.isArray(users) ? users
     .filter(user =>
       user.username.toLowerCase().includes(search.toLowerCase()) ||
       user.email.toLowerCase().includes(search.toLowerCase())
@@ -78,13 +112,13 @@ export default function AdminUsersPage() {
       if (filter === 'verified') return user.kycVerified
       if (filter === 'pending') return !user.kycVerified
       return true
-    })
+    }) : []
 
   const stats = {
-    total: users.length,
-    verified: users.filter(u => u.kycVerified).length,
-    pending: users.filter(u => !u.kycVerified).length,
-    totalBalance: users.reduce((sum, u) => sum + Number(u.walletBalance), 0)
+    total: Array.isArray(users) ? users.length : 0,
+    verified: Array.isArray(users) ? users.filter(u => u.kycVerified).length : 0,
+    pending: Array.isArray(users) ? users.filter(u => !u.kycVerified).length : 0,
+    totalBalance: Array.isArray(users) ? users.reduce((sum, u) => sum + Number(u.walletBalance), 0) : 0
   }
 
   if (loading) {
@@ -98,20 +132,39 @@ export default function AdminUsersPage() {
     )
   }
 
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <div className="flex flex-col items-center gap-4 max-w-md text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+            <AlertTriangle className="w-8 h-8 text-red-600" />
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-slate-900 mb-2">Failed to Load Users</p>
+            <p className="text-sm text-slate-600 mb-4">{error}</p>
+            <button
+              onClick={fetchUsers}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-teal-500/10 rounded-3xl blur-3xl -z-10"></div>
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl shadow-lg">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Users Management</h1>
-              <p className="text-slate-600 text-sm mt-0.5">Monitor and manage all platform users</p>
-            </div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white rounded-lg border border-slate-200">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-600 rounded-lg">
+            <Users className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Users Management</h1>
+            <p className="text-slate-600 text-sm mt-0.5">Monitor and manage all platform users</p>
           </div>
         </div>
       </div>
@@ -122,32 +175,28 @@ export default function AdminUsersPage() {
           title="Total Users"
           value={stats.total.toLocaleString()}
           icon={<Users className="w-5 h-5" />}
-          gradient="from-blue-500 to-cyan-600"
         />
         <StatCard 
           title="KYC Verified"
           value={stats.verified.toLocaleString()}
           subtitle={`${((stats.verified/stats.total)*100).toFixed(1)}% verified`}
           icon={<ShieldCheck className="w-5 h-5" />}
-          gradient="from-emerald-500 to-teal-600"
         />
         <StatCard 
           title="KYC Pending"
           value={stats.pending.toLocaleString()}
           icon={<AlertTriangle className="w-5 h-5" />}
-          gradient="from-amber-500 to-orange-600"
           pulse={stats.pending > 0}
         />
         <StatCard 
           title="Total Balance"
           value={`₹${stats.totalBalance.toLocaleString()}`}
           icon={<DollarSign className="w-5 h-5" />}
-          gradient="from-purple-500 to-pink-600"
         />
       </div>
 
       {/* Search and Filters */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+      <div className="bg-white rounded-lg border border-slate-200 p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
@@ -156,7 +205,7 @@ export default function AdminUsersPage() {
               placeholder="Search by username or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none transition-all"
+              className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors"
             />
           </div>
           <div className="flex gap-2">
@@ -195,10 +244,10 @@ export default function AdminUsersPage() {
       </div>
 
       {/* Users Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gradient-to-r from-slate-50 to-slate-100/50 border-b border-slate-200">
+            <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left px-6 py-4 text-sm font-bold text-slate-700">User</th>
                 <th className="text-left px-6 py-4 text-sm font-bold text-slate-700">Wallet</th>
@@ -213,7 +262,7 @@ export default function AdminUsersPage() {
                 <tr key={user.id} className="hover:bg-slate-50/50 transition-colors group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
+                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 font-bold">
                         {user.username.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -345,13 +394,13 @@ export default function AdminUsersPage() {
             <div className="flex gap-3 mt-8">
               <button
                 onClick={() => setShowFineModal(false)}
-                className="flex-1 px-6 py-3 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-all"
+                className="flex-1 px-6 py-3 bg-white border border-slate-300 text-slate-700 rounded-lg font-semibold hover:bg-slate-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleIssueFine}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white rounded-xl font-semibold hover:from-rose-600 hover:to-red-700 transition-all shadow-lg shadow-rose-500/30"
+                className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors"
               >
                 Issue Fine
               </button>
@@ -359,6 +408,14 @@ export default function AdminUsersPage() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        message={confirmModal.message}
+        type={confirmModal.type}
+      />
     </div>
   )
 }
@@ -368,34 +425,28 @@ function StatCard({
   value,
   subtitle,
   icon,
-  gradient,
   pulse
 }: {
   title: string
   value: string
   subtitle?: string
   icon: React.ReactNode
-  gradient: string
   pulse?: boolean
 }) {
   return (
-    <div className="group relative bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
+    <div className="bg-white rounded-lg p-6 border border-slate-200 hover:border-slate-300 transition-colors">
+      <div className="flex items-start justify-between mb-4">
+        <div className={`p-3 rounded-lg bg-slate-100 text-slate-700 ${pulse ? 'animate-pulse' : ''}`}>
+          {icon}
+        </div>
+      </div>
       
-      <div className="relative z-10">
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg ${pulse ? 'animate-pulse' : ''}`}>
-            {icon}
-          </div>
-        </div>
-        
-        <div>
-          <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">{value}</h3>
-          {subtitle && (
-            <p className="text-xs text-slate-500 font-medium">{subtitle}</p>
-          )}
-        </div>
+      <div>
+        <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
+        <h3 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">{value}</h3>
+        {subtitle && (
+          <p className="text-xs text-slate-500 font-medium">{subtitle}</p>
+        )}
       </div>
     </div>
   )

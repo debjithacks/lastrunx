@@ -5,6 +5,7 @@ import {
   Ticket, Tag, TrendingUp, Calendar, Users, DollarSign, 
   Percent, Plus, ChevronRight, Clock, CheckCircle, XCircle 
 } from 'lucide-react'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 interface Coupon {
   id: string
@@ -25,6 +26,7 @@ export default function AdminCouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', type: 'info' as 'success' | 'error' | 'warning' | 'info' })
   const [formData, setFormData] = useState({
     type: 'PROMOTIONAL',
     discountType: 'PERCENTAGE',
@@ -42,10 +44,30 @@ export default function AdminCouponsPage() {
   const fetchCoupons = async () => {
     try {
       const res = await fetch('/api/admin/coupons')
+      
+      if (!res.ok) {
+        console.error('API error:', res.status)
+        setCoupons([])
+        return
+      }
+      
       const data = await res.json()
-      setCoupons(data)
+      
+      if (data.error) {
+        console.error('API returned error:', data.error)
+        setCoupons([])
+        return
+      }
+      
+      if (Array.isArray(data)) {
+        setCoupons(data)
+      } else {
+        console.error('Invalid data format:', data)
+        setCoupons([])
+      }
     } catch (error) {
       console.error('Failed to fetch coupons:', error)
+      setCoupons([])
     } finally {
       setLoading(false)
     }
@@ -70,9 +92,9 @@ export default function AdminCouponsPage() {
         validUntil: '',
       })
       fetchCoupons()
-      alert('Coupon created successfully')
+      setConfirmModal({ isOpen: true, message: 'Coupon created successfully', type: 'success' })
     } catch (error) {
-      alert('Failed to create coupon')
+      setConfirmModal({ isOpen: true, message: 'Failed to create coupon', type: 'error' })
     }
   }
 
@@ -85,14 +107,14 @@ export default function AdminCouponsPage() {
       })
       fetchCoupons()
     } catch (error) {
-      alert('Failed to update coupon')
+      setConfirmModal({ isOpen: true, message: 'Failed to update coupon', type: 'error' })
     }
   }
 
   const stats = {
-    total: coupons.length,
-    active: coupons.filter(c => c.isActive).length,
-    totalUsage: coupons.reduce((sum, c) => sum + c.usedCount, 0),
+    total: Array.isArray(coupons) ? coupons.length : 0,
+    active: Array.isArray(coupons) ? coupons.filter(c => c.isActive).length : 0,
+    totalUsage: Array.isArray(coupons) ? coupons.reduce((sum, c) => sum + c.usedCount, 0) : 0,
   }
 
   if (loading) {
@@ -109,26 +131,23 @@ export default function AdminCouponsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-yellow-500/10 rounded-3xl blur-3xl -z-10"></div>
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
-              <Ticket className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Coupons</h1>
-              <p className="text-slate-600 text-sm mt-0.5">Manage discount coupons and promotions</p>
-            </div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white rounded-lg border border-slate-200">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-600 rounded-lg">
+            <Ticket className="w-6 h-6 text-white" />
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-xl font-semibold hover:from-amber-600 hover:to-orange-700 transition-all shadow-lg shadow-amber-500/30 flex items-center gap-2"
-          >
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Coupons</h1>
+            <p className="text-slate-600 text-sm mt-0.5">Manage discount coupons and promotions</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setShowCreateModal(true)}
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
             <Plus className="w-5 h-5" />
             Create Coupon
           </button>
-        </div>
       </div>
 
       {/* Stats Cards */}
@@ -137,19 +156,16 @@ export default function AdminCouponsPage() {
           title="Total Coupons"
           value={stats.total.toString()}
           icon={<Ticket className="w-5 h-5" />}
-          gradient="from-amber-500 to-orange-600"
         />
         <StatCard 
           title="Active Coupons"
           value={stats.active.toString()}
           icon={<CheckCircle className="w-5 h-5" />}
-          gradient="from-emerald-500 to-teal-600"
         />
         <StatCard 
           title="Total Usage"
           value={stats.totalUsage.toString()}
           icon={<Users className="w-5 h-5" />}
-          gradient="from-blue-500 to-cyan-600"
         />
       </div>
 
@@ -273,6 +289,14 @@ export default function AdminCouponsPage() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        message={confirmModal.message}
+        type={confirmModal.type}
+      />
     </div>
   )
 }
@@ -386,25 +410,19 @@ function CouponCard({ coupon, onToggle }: { coupon: Coupon, onToggle: (id: strin
 function StatCard({
   title,
   value,
-  icon,
-  gradient
+  icon
 }: {
   title: string
   value: string
   icon: React.ReactNode
-  gradient: string
 }) {
   return (
-    <div className="group relative bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
-      
-      <div className="relative z-10">
-        <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg mb-3`}>
-          {icon}
-        </div>
-        <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
-        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{value}</h3>
+    <div className="bg-white rounded-lg p-6 border border-slate-200 hover:border-slate-300 transition-colors">
+      <div className="inline-flex p-3 rounded-lg bg-slate-100 text-slate-700 mb-3">
+        {icon}
       </div>
+      <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
+      <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{value}</h3>
     </div>
   )
 }
