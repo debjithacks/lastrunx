@@ -9,11 +9,8 @@ async function isAdmin(session: any) {
     return false
   }
   
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id }
-  })
-  
-  return user?.role === 'ADMIN'
+  const adminRoles = ['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER', 'SUPPORT', 'MARKETING']
+  return adminRoles.includes(session.user.role)
 }
 
 export async function GET(req: NextRequest) {

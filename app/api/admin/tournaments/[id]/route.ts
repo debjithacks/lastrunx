@@ -12,8 +12,8 @@ async function isAdmin(session: any) {
     return false
   }
   
-  const allowedRoles = ['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER']
-  return allowedRoles.includes(session.user.role)
+  const adminRoles = ['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER', 'SUPPORT', 'MARKETING']
+  return adminRoles.includes(session.user.role)
 }
 
 // GET /api/admin/tournaments/[id] - Get single tournament details
