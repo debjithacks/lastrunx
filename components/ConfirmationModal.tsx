@@ -3,6 +3,11 @@
 import { useEffect } from 'react'
 import { CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react'
 
+/**
+ * Professional confirmation modal component
+ * Used to display success, error, warning, and info messages
+ * Replaces browser alert() dialogs with a modern UI
+ */
 interface ConfirmationModalProps {
   isOpen: boolean
   onClose: () => void
