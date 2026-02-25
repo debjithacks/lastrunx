@@ -34,6 +34,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -45,14 +46,29 @@ export default function ProfilePage() {
 
   const fetchProfile = async () => {
     try {
+      setError(null)
+      console.log('Fetching profile... Session:', session)
+      
       const response = await fetch('/api/user/profile')
       const data = await response.json()
 
+      console.log('Profile API Response:', { 
+        status: response.status, 
+        statusText: response.statusText,
+        ok: response.ok,
+        data 
+      })
+
       if (response.ok && data.user) {
         setProfile(data.user)
+      } else {
+        const errorMessage = data.error || 'Failed to load profile'
+        console.error('Failed to fetch profile:', data)
+        setError(errorMessage)
       }
     } catch (error) {
       console.error('Error fetching profile:', error)
+      setError('Network error. Please check your connection.')
     } finally {
       setLoading(false)
     }
@@ -75,10 +91,32 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-slate-900">Profile not found</h2>
-          <Link href="/" className="text-indigo-600 font-medium text-sm mt-2 hover:underline">Return Home</Link>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Profile not found</h2>
+          {error && (
+            <p className="text-slate-600 mb-4">{error}</p>
+          )}
+          <p className="text-sm text-slate-500 mb-6">
+            Your session may be outdated or your account may have been removed. Please sign out and log in again.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={handleLogout}
+              className="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold text-sm"
+            >
+              Sign Out & Login Again
+            </button>
+            <Link 
+              href="/" 
+              className="px-6 py-2.5 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors font-semibold text-sm"
+            >
+              Go Home
+            </Link>
+          </div>
         </div>
       </div>
     )

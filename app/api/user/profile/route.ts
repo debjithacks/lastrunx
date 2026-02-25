@@ -7,12 +7,17 @@ export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
+    console.log('Profile API - Session:', session)
+
     if (!session || !session.user) {
+      console.log('Profile API - No session or user')
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please login again' },
         { status: 401 }
       )
     }
+
+    console.log('Profile API - User ID:', session.user.id)
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -44,9 +49,11 @@ export async function GET(req: NextRequest) {
       }
     })
 
+    console.log('Profile API - User found:', !!user)
+
     if (!user) {
       return NextResponse.json(
-        { error: 'User not found' },
+        { error: 'User not found in database' },
         { status: 404 }
       )
     }
@@ -55,7 +62,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error('Profile fetch error:', error)
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: error instanceof Error ? error.message : 'Internal server error' },
       { status: 500 }
     )
   }
