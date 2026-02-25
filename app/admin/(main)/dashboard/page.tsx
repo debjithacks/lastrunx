@@ -89,24 +89,19 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header with enhanced design */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl blur-3xl -z-10"></div>
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
-                <BarChart3 className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
-                <p className="text-slate-600 text-sm mt-0.5 flex items-center gap-2">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                  Live Analytics & Performance Metrics
-                </p>
-              </div>
+      {/* Header */}
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white rounded-lg border border-slate-200">
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-blue-600 rounded-lg">
+              <BarChart3 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Dashboard</h1>
+              <p className="text-slate-600 text-sm mt-0.5">Live Analytics & Performance Metrics</p>
             </div>
           </div>
+        </div>
 
           <div className="flex items-center gap-3">
             <div className="text-right mr-3 hidden lg:block">
@@ -116,18 +111,17 @@ export default function AdminDashboard() {
             <select
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="appearance-none pl-4 pr-10 py-3 bg-white border-2 border-slate-200 rounded-xl text-sm font-semibold text-slate-700 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none shadow-sm cursor-pointer transition-all"
+              className="appearance-none pl-4 pr-10 py-3 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-700 hover:border-blue-500 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none cursor-pointer transition-colors"
             >
-              <option value="today">📅 Today</option>
-              <option value="week">📊 This Week</option>
-              <option value="month">📈 This Month</option>
-              <option value="all">🌐 All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="all">All Time</option>
             </select>
           </div>
-        </div>
       </div>
 
-      {/* Key Metrics - Enhanced Design */}
+      {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Total Revenue"
@@ -135,7 +129,6 @@ export default function AdminDashboard() {
           change="+12.5%"
           trend="up"
           icon={<DollarSign className="w-5 h-5" />}
-          gradient="from-emerald-500 to-teal-600"
         />
         <MetricCard
           title="Active Users"
@@ -144,7 +137,6 @@ export default function AdminDashboard() {
           change="+8.2%"
           trend="up"
           icon={<Users className="w-5 h-5" />}
-          gradient="from-blue-500 to-cyan-600"
         />
         <MetricCard
           title="Live Tournaments"
@@ -153,8 +145,6 @@ export default function AdminDashboard() {
           change="+3"
           trend="up"
           icon={<Trophy className="w-5 h-5" />}
-          gradient="from-purple-500 to-pink-600"
-          pulse
         />
         <MetricCard
           title="Registrations"
@@ -162,7 +152,6 @@ export default function AdminDashboard() {
           change="+15.3%"
           trend="up"
           icon={<TrendingUp className="w-5 h-5" />}
-          gradient="from-orange-500 to-red-600"
         />
       </div>
 
@@ -171,19 +160,18 @@ export default function AdminDashboard() {
         {/* Revenue Analytics - 2/3 width */}
         <div className="lg:col-span-2 space-y-6">
           {/* Financial Overview */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-slate-50 to-slate-100/50 px-6 py-4 border-b border-slate-200">
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <DollarSign className="w-5 h-5 text-emerald-600" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <DollarSign className="w-5 h-5 text-slate-700" />
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-slate-900">Financial Overview</h2>
                     <p className="text-xs text-slate-600 mt-0.5">Revenue breakdown and transactions</p>
                   </div>
                 </div>
-                <TrendingUp className="w-5 h-5 text-emerald-500" />
               </div>
             </div>
             <div className="p-6">
@@ -219,28 +207,27 @@ export default function AdminDashboard() {
           </div>
 
           {/* Game Revenue Breakdown */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-6 py-4 border-b border-slate-200">
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-slate-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <Gamepad2 className="w-5 h-5 text-indigo-600" />
+                  <div className="p-2 bg-slate-100 rounded-lg">
+                    <Gamepad2 className="w-5 h-5 text-slate-700" />
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-slate-900">Game Performance</h2>
                     <p className="text-xs text-slate-600 mt-0.5">Revenue by game title</p>
                   </div>
                 </div>
-                <PieChart className="w-5 h-5 text-indigo-500" />
               </div>
             </div>
             <div className="p-6">
               <div className="space-y-3">
                 {Object.entries(analytics?.gameRevenue || {}).map(([game, revenue], index) => (
-                  <div key={game} className="group relative">
-                    <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-slate-50 to-transparent hover:from-indigo-50 hover:to-purple-50/30 border border-slate-100 hover:border-indigo-200 transition-all duration-300 cursor-pointer">
+                  <div key={game} className="group">
+                    <div className="flex items-center justify-between p-4 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-100 transition-colors">
                       <div className="flex items-center gap-4 flex-1">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold text-sm shadow-lg">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-slate-200 text-slate-700 font-bold text-sm">
                           #{index + 1}
                         </div>
                         <div className="flex-1">
@@ -249,16 +236,9 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-emerald-600">₹{Number(revenue || 0).toLocaleString()}</p>
+                        <p className="text-lg font-bold text-slate-900">₹{Number(revenue || 0).toLocaleString()}</p>
                         <p className="text-xs text-slate-500 mt-0.5">Total earnings</p>
                       </div>
-                    </div>
-                    {/* Progress bar */}
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-slate-100 rounded-b-xl overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-indigo-500 to-purple-600"
-                        style={{ width: `${Math.min((Number(revenue) / Math.max(...Object.values(analytics?.gameRevenue || {}))) * 100, 100)}%` }}
-                      ></div>
                     </div>
                   </div>
                 ))}
@@ -277,30 +257,26 @@ export default function AdminDashboard() {
         {/* Right Sidebar - 1/3 width */}
         <div className="space-y-6">
           {/* User Stats */}
-          <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
-            <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full -ml-12 -mb-12"></div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl">
-                  <Users className="w-5 h-5" />
-                </div>
-                <h3 className="text-lg font-bold">User Statistics</h3>
+          <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <Users className="w-5 h-5 text-slate-700" />
               </div>
-              <div className="space-y-4">
-                <UserStat label="Total Users" value={analytics?.users?.total || 0} icon={<Users className="w-4 h-4" />} />
-                <UserStat label="Active Users" value={analytics?.users?.active || 0} icon={<Activity className="w-4 h-4" />} />
-                <UserStat label="New Signups" value={analytics?.users?.new || 0} icon={<UserPlus className="w-4 h-4" />} />
-                <UserStat label="KYC Pending" value={analytics?.users?.kycPending || 0} icon={<ClipboardCheck className="w-4 h-4" />} alert={analytics?.users?.kycPending > 0} />
-              </div>
+              <h3 className="text-lg font-bold text-slate-900">User Statistics</h3>
+            </div>
+            <div className="space-y-3">
+              <UserStat label="Total Users" value={analytics?.users?.total || 0} icon={<Users className="w-4 h-4" />} />
+              <UserStat label="Active Users" value={analytics?.users?.active || 0} icon={<Activity className="w-4 h-4" />} />
+              <UserStat label="New Signups" value={analytics?.users?.new || 0} icon={<UserPlus className="w-4 h-4" />} />
+              <UserStat label="KYC Pending" value={analytics?.users?.kycPending || 0} icon={<ClipboardCheck className="w-4 h-4" />} alert={analytics?.users?.kycPending > 0} />
             </div>
           </div>
 
           {/* Tournament Quick Stats */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="bg-white rounded-lg border border-slate-200 p-6">
             <div className="flex items-center gap-3 mb-5">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Trophy className="w-5 h-5 text-purple-600" />
+              <div className="p-2 bg-slate-100 rounded-lg">
+                <Trophy className="w-5 h-5 text-slate-700" />
               </div>
               <h3 className="text-lg font-bold text-slate-900">Tournament Status</h3>
             </div>
@@ -326,29 +302,24 @@ export default function AdminDashboard() {
 
           {/* Alert Card */}
           {(analytics?.pendingDisputes || 0) > 0 ? (
-            <div className="bg-gradient-to-br from-amber-400 via-orange-500 to-red-500 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 opacity-20">
-                <AlertTriangle className="w-32 h-32" />
+            <div className="bg-white border-l-4 border-amber-500 rounded-lg p-6">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600" />
+                <p className="text-sm font-bold uppercase tracking-wider text-amber-900">Action Required</p>
               </div>
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                  <Zap className="w-5 h-5" />
-                  <p className="text-sm font-bold uppercase tracking-wider">Action Required</p>
-                </div>
-                <h3 className="text-3xl font-bold mb-2">{analytics?.pendingDisputes}</h3>
-                <p className="text-white/90 text-sm mb-4">Pending disputes need your review</p>
-                <button className="w-full py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 rounded-xl text-sm font-semibold transition-all">
-                  Review Now →
-                </button>
-              </div>
+              <h3 className="text-3xl font-bold mb-2 text-slate-900">{analytics?.pendingDisputes}</h3>
+              <p className="text-slate-600 text-sm mb-4">Pending disputes need your review</p>
+              <button className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-semibold transition-colors">
+                Review Now →
+              </button>
             </div>
           ) : (
-            <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 text-white shadow-xl">
+            <div className="bg-white border-l-4 border-emerald-500 rounded-lg p-6">
               <div className="flex items-center gap-2 mb-3">
-                <CheckCircle className="w-5 h-5" />
-                <p className="text-sm font-bold uppercase tracking-wider">All Clear</p>
+                <CheckCircle className="w-5 h-5 text-emerald-600" />
+                <p className="text-sm font-bold uppercase tracking-wider text-emerald-900">All Clear</p>
               </div>
-              <p className="text-white/90">No pending disputes or urgent actions required.</p>
+              <p className="text-slate-600">No pending disputes or urgent actions required.</p>
             </div>
           )}
         </div>
@@ -365,9 +336,7 @@ function MetricCard({
   subtitle,
   change,
   trend,
-  icon,
-  gradient,
-  pulse
+  icon
 }: {
   title: string
   value: string
@@ -375,40 +344,30 @@ function MetricCard({
   change?: string
   trend?: 'up' | 'down'
   icon: React.ReactNode
-  gradient: string
-  pulse?: boolean
 }) {
   return (
-    <div className="group relative bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-      {/* Gradient background on hover */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
-      
-      <div className="relative z-10">
-        <div className="flex items-start justify-between mb-4">
-          <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg ${pulse ? 'animate-pulse' : ''}`}>
-            {icon}
+    <div className="bg-white rounded-lg p-6 border border-slate-200 hover:border-slate-300 transition-colors">
+      <div className="flex items-start justify-between mb-4">
+        <div className="p-3 rounded-lg bg-slate-100">
+          {icon}
+        </div>
+        {change && (
+          <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
+            trend === 'up' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+          }`}>
+            {trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+            {change}
           </div>
-          {change && (
-            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
-              trend === 'up' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
-            }`}>
-              {trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-              {change}
-            </div>
-          )}
-        </div>
-        
-        <div>
-          <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
-          <h3 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">{value}</h3>
-          {subtitle && (
-            <p className="text-xs text-slate-500 font-medium">{subtitle}</p>
-          )}
-        </div>
+        )}
       </div>
-
-      {/* Decorative element */}
-      <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-br from-transparent to-slate-50 rounded-tl-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      
+      <div>
+        <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
+        <h3 className="text-3xl font-bold text-slate-900 tracking-tight mb-1">{value}</h3>
+        {subtitle && (
+          <p className="text-xs text-slate-500 font-medium">{subtitle}</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -434,9 +393,9 @@ function FinanceCard({
   }
 
   return (
-    <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-colors">
+    <div className="p-4 rounded-lg bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-colors">
       <div className="flex items-center gap-2 mb-2">
-        <div className={`p-1.5 rounded-lg ${colorStyles[color]}`}>
+        <div className="p-1.5 rounded-lg bg-slate-200 text-slate-700">
           {icon}
         </div>
         <span className="text-xs font-semibold text-slate-600">{label}</span>
@@ -461,14 +420,18 @@ function UserStat({
   alert?: boolean
 }) {
   return (
-    <div className={`flex items-center justify-between p-3 rounded-xl ${alert ? 'bg-red-500/20 border border-red-400/30' : 'bg-white/10 backdrop-blur-sm'}`}>
+    <div className={`flex items-center justify-between p-3 rounded-lg ${
+      alert ? 'bg-red-50 border border-red-200' : 'bg-slate-50 border border-slate-100'
+    }`}>
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-white/20 rounded-lg">
+        <div className={`p-2 rounded-lg ${
+          alert ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'
+        }`}>
           {icon}
         </div>
-        <span className="font-medium">{label}</span>
+        <span className="font-medium text-slate-900">{label}</span>
       </div>
-      <span className="text-xl font-bold">{value.toLocaleString()}</span>
+      <span className="text-xl font-bold text-slate-900">{value.toLocaleString()}</span>
     </div>
   )
 }

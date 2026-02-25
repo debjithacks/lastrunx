@@ -50,10 +50,30 @@ export default function DisputesPage() {
     setLoading(true)
     try {
       const res = await fetch(`/api/admin/disputes?status=${filter}`)
+      
+      if (!res.ok) {
+        console.error('API error:', res.status)
+        setDisputes([])
+        return
+      }
+      
       const data = await res.json()
-      setDisputes(data)
+      
+      if (data.error) {
+        console.error('API returned error:', data.error)
+        setDisputes([])
+        return
+      }
+      
+      if (Array.isArray(data)) {
+        setDisputes(data)
+      } else {
+        console.error('Invalid data format:', data)
+        setDisputes([])
+      }
     } catch (error) {
       console.error('Failed to fetch disputes:', error)
+      setDisputes([])
     } finally {
       setLoading(false)
     }
@@ -81,10 +101,10 @@ export default function DisputesPage() {
   }
 
   const stats = {
-    total: disputes.length,
-    pending: disputes.filter(d => d.status === 'PENDING').length,
-    approved: disputes.filter(d => d.status === 'APPROVED').length,
-    rejected: disputes.filter(d => d.status === 'REJECTED').length,
+    total: Array.isArray(disputes) ? disputes.length : 0,
+    pending: Array.isArray(disputes) ? disputes.filter(d => d.status === 'PENDING').length : 0,
+    approved: Array.isArray(disputes) ? disputes.filter(d => d.status === 'APPROVED').length : 0,
+    rejected: Array.isArray(disputes) ? disputes.filter(d => d.status === 'REJECTED').length : 0,
   }
 
   if (status === 'loading' || loading) {
@@ -101,36 +121,33 @@ export default function DisputesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 via-red-500/10 to-pink-500/10 rounded-3xl blur-3xl -z-10"></div>
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-rose-500 to-red-600 rounded-xl shadow-lg">
-              <AlertTriangle className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Disputes</h1>
-              <p className="text-slate-600 text-sm mt-0.5">Review and resolve fine disputes</p>
-            </div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white rounded-lg border border-slate-200">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-600 rounded-lg">
+            <AlertTriangle className="w-6 h-6 text-white" />
           </div>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="px-5 py-3 border-2 border-slate-200 rounded-xl focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 focus:outline-none transition-all font-semibold"
-          >
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Disputes</h1>
+            <p className="text-slate-600 text-sm mt-0.5">Review and resolve fine disputes</p>
+          </div>
+        </div>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="px-5 py-3 border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none transition-colors font-semibold"
+        >
             <option value="PENDING">Pending</option>
             <option value="APPROVED">Approved</option>
             <option value="REJECTED">Rejected</option>
           </select>
-        </div>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard title="Total" value={stats.total.toString()} gradient="from-slate-500 to-slate-700" />
-        <StatCard title="Pending" value={stats.pending.toString()} gradient="from-amber-500 to-orange-600" pulse={stats.pending > 0} />
-        <StatCard title="Approved" value={stats.approved.toString()} gradient="from-emerald-500 to-teal-600" />
-        <StatCard title="Rejected" value={stats.rejected.toString()} gradient="from-rose-500 to-red-600" />
+        <StatCard title="Total" value={stats.total.toString()} />
+        <StatCard title="Pending" value={stats.pending.toString()} pulse={stats.pending > 0} />
+        <StatCard title="Approved" value={stats.approved.toString()} />
+        <StatCard title="Rejected" value={stats.rejected.toString()} />
       </div>
 
       {/* Disputes Grid */}
@@ -302,11 +319,11 @@ function DisputeCard({ dispute, onReview }: { dispute: Dispute, onReview: () => 
   )
 }
 
-function StatCard({ title, value, gradient, pulse }: { title: string, value: string, gradient: string, pulse?: boolean }) {
+function StatCard({ title, value, pulse }: { title: string, value: string, pulse?: boolean }) {
   return (
-    <div className={`bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl transition-all ${pulse ? 'animate-pulse' : ''}`}>
+    <div className={`bg-white rounded-lg p-6 border border-slate-200 hover:border-slate-300 transition-colors ${pulse ? 'animate-pulse' : ''}`}>
       <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
-      <h3 className={`text-3xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>{value}</h3>
+      <h3 className="text-3xl font-bold text-slate-900">{value}</h3>
     </div>
   )
 }

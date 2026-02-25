@@ -150,17 +150,14 @@ export default function AdminSettings() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 rounded-3xl blur-3xl -z-10"></div>
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg">
-              <Settings className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Settings</h1>
-              <p className="text-slate-600 text-sm mt-0.5">Manage your account and platform settings</p>
-            </div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white rounded-lg border border-slate-200">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-600 rounded-lg">
+            <Settings className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Settings</h1>
+            <p className="text-slate-600 text-sm mt-0.5">Manage your account and platform settings</p>
           </div>
         </div>
       </div>
@@ -182,8 +179,8 @@ export default function AdminSettings() {
         )}
 
         {/* Tabs */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="border-b border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div className="border-b border-slate-200 bg-slate-50">
             <div className="flex overflow-x-auto scrollbar-hide">
               {tabs.map((tab) => {
                 const Icon = tab.icon
@@ -191,10 +188,10 @@ export default function AdminSettings() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-6 py-4 font-semibold text-sm whitespace-nowrap transition-all relative ${
+                    className={`flex items-center gap-2 px-6 py-4 font-semibold text-sm whitespace-nowrap transition-colors relative ${
                       activeTab === tab.id
-                        ? 'text-indigo-600 bg-white'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'
+                        ? 'text-blue-600 bg-white'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                     }`}
                   >
                     <Icon className="w-5 h-5" />

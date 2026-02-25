@@ -77,23 +77,20 @@ export default function TournamentsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-rose-500/10 rounded-3xl blur-3xl -z-10"></div>
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-slate-200/50 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
-              <Trophy className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Tournaments</h1>
-              <p className="text-slate-600 text-sm mt-0.5">Manage and monitor all tournaments</p>
-            </div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 p-6 bg-white rounded-lg border border-slate-200">
+        <div className="flex items-center gap-4">
+          <div className="p-3 bg-blue-600 rounded-lg">
+            <Trophy className="w-6 h-6 text-white" />
           </div>
-          <button className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-600 hover:to-pink-700 transition-all shadow-lg shadow-purple-500/30 flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            Create Tournament
-          </button>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Tournaments</h1>
+            <p className="text-slate-600 text-sm mt-0.5">Manage and monitor all tournaments</p>
+          </div>
         </div>
+        <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2">
+          <Plus className="w-5 h-5" />
+          Create Tournament
+        </button>
       </div>
 
       {/* Stats Cards */}
@@ -102,32 +99,27 @@ export default function TournamentsPage() {
           title="Total Tournaments"
           value={stats.total.toString()}
           icon={<Trophy className="w-5 h-5" />}
-          gradient="from-purple-500 to-pink-600"
         />
         <StatCard 
           title="Live Now"
           value={stats.live.toString()}
           icon={<Play className="w-5 h-5" />}
-          gradient="from-rose-500 to-red-600"
           pulse={stats.live > 0}
         />
         <StatCard 
           title="Upcoming"
           value={stats.upcoming.toString()}
           icon={<Calendar className="w-5 h-5" />}
-          gradient="from-blue-500 to-cyan-600"
         />
         <StatCard 
           title="Total Prize Pool"
           value={`₹${(stats.totalPrize/1000).toFixed(0)}K`}
           icon={<DollarSign className="w-5 h-5" />}
-          gradient="from-emerald-500 to-teal-600"
         />
         <StatCard 
           title="Total Players"
           value={stats.totalPlayers.toString()}
           icon={<Users className="w-5 h-5" />}
-          gradient="from-amber-500 to-orange-600"
         />
       </div>
 
@@ -135,9 +127,9 @@ export default function TournamentsPage() {
       <div className="flex gap-3">
         <button
           onClick={() => setFilter('all')}
-          className={`px-5 py-3 rounded-xl font-semibold transition-all ${
+          className={`px-5 py-3 rounded-lg font-semibold transition-colors ${
             filter === 'all'
-              ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg shadow-purple-500/30'
+              ? 'bg-blue-600 text-white'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
@@ -145,20 +137,20 @@ export default function TournamentsPage() {
         </button>
         <button
           onClick={() => setFilter('LIVE')}
-          className={`px-5 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+          className={`px-5 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2 ${
             filter === 'LIVE'
-              ? 'bg-gradient-to-r from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/30'
+              ? 'bg-blue-600 text-white'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
-          {stats.live > 0 && <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>}
+          {stats.live > 0 && <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>}
           Live
         </button>
         <button
           onClick={() => setFilter('UPCOMING')}
-          className={`px-5 py-3 rounded-xl font-semibold transition-all ${
+          className={`px-5 py-3 rounded-lg font-semibold transition-colors ${
             filter === 'UPCOMING'
-              ? 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white shadow-lg shadow-blue-500/30'
+              ? 'bg-blue-600 text-white'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
@@ -166,9 +158,9 @@ export default function TournamentsPage() {
         </button>
         <button
           onClick={() => setFilter('COMPLETED')}
-          className={`px-5 py-3 rounded-xl font-semibold transition-all ${
+          className={`px-5 py-3 rounded-lg font-semibold transition-colors ${
             filter === 'COMPLETED'
-              ? 'bg-gradient-to-r from-slate-500 to-slate-700 text-white shadow-lg shadow-slate-500/30'
+              ? 'bg-blue-600 text-white'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
@@ -184,7 +176,7 @@ export default function TournamentsPage() {
       </div>
 
       {filteredTournaments.length === 0 && (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200">
+        <div className="text-center py-16 bg-white rounded-lg border border-slate-200">
           <Trophy className="w-20 h-20 text-slate-300 mx-auto mb-4" />
           <p className="text-slate-600 font-semibold text-lg">No tournaments found</p>
           <p className="text-sm text-slate-500 mt-2">Try adjusting your filters or create a new tournament</p>
@@ -200,21 +192,18 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
 
   const statusConfig = {
     LIVE: {
-      gradient: 'from-rose-500 to-red-600',
-      bg: 'bg-rose-100',
-      text: 'text-rose-700',
+      bg: 'bg-emerald-100',
+      text: 'text-emerald-700',
       icon: <Play className="w-4 h-4" />,
       pulse: true
     },
     UPCOMING: {
-      gradient: 'from-blue-500 to-cyan-600',
       bg: 'bg-blue-100',
       text: 'text-blue-700',
       icon: <Calendar className="w-4 h-4" />,
       pulse: false
     },
     COMPLETED: {
-      gradient: 'from-slate-500 to-slate-700',
       bg: 'bg-slate-100',
       text: 'text-slate-700',
       icon: <CheckCircle className="w-4 h-4" />,
@@ -225,15 +214,12 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
   const config = statusConfig[tournament.status as keyof typeof statusConfig] || statusConfig.UPCOMING
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl transition-all duration-300">
-      {/* Gradient Header */}
-      <div className={`h-2 bg-gradient-to-r ${config.gradient}`}></div>
-
+    <div className="group relative bg-white rounded-lg border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
       <div className="p-6">
         {/* Title and Status */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-purple-600 transition-colors">
+            <h3 className="text-xl font-bold text-slate-900 mb-2">
               {tournament.title}
             </h3>
             <div className="flex items-center gap-2">
@@ -249,20 +235,20 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-emerald-600 mb-1">
+          <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+            <div className="flex items-center gap-2 text-slate-600 mb-1">
               <DollarSign className="w-4 h-4" />
               <span className="text-xs font-semibold">Prize Pool</span>
             </div>
-            <p className="text-2xl font-bold text-emerald-700">₹{tournament.prizePool.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-slate-900">₹{tournament.prizePool.toLocaleString()}</p>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4">
-            <div className="flex items-center gap-2 text-blue-600 mb-1">
+          <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
+            <div className="flex items-center gap-2 text-slate-600 mb-1">
               <DollarSign className="w-4 h-4" />
               <span className="text-xs font-semibold">Entry Fee</span>
             </div>
-            <p className="text-2xl font-bold text-blue-700">₹{tournament.entryFee}</p>
+            <p className="text-2xl font-bold text-slate-900">₹{tournament.entryFee}</p>
           </div>
         </div>
 
@@ -279,11 +265,7 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
           </div>
           <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
             <div
-              className={`h-full transition-all duration-500 ${
-                isAlmostFull 
-                  ? 'bg-gradient-to-r from-rose-500 to-red-600' 
-                  : 'bg-gradient-to-r from-purple-500 to-pink-600'
-              }`}
+              className="h-full bg-blue-600 transition-all duration-500"
               style={{ width: `${fillPercentage}%` }}
             ></div>
           </div>
@@ -300,9 +282,6 @@ function TournamentCard({ tournament }: { tournament: Tournament }) {
           </span>
         </div>
       </div>
-
-      {/* Hover Effect Gradient */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300 pointer-events-none`}></div>
     </div>
   )
 }
@@ -311,26 +290,20 @@ function StatCard({
   title,
   value,
   icon,
-  gradient,
   pulse
 }: {
   title: string
   value: string
   icon: React.ReactNode
-  gradient: string
   pulse?: boolean
 }) {
   return (
-    <div className="group relative bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
-      
-      <div className="relative z-10">
-        <div className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${gradient} text-white shadow-lg mb-3 ${pulse ? 'animate-pulse' : ''}`}>
-          {icon}
-        </div>
-        <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
-        <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{value}</h3>
+    <div className="bg-white rounded-lg p-6 border border-slate-200 hover:border-slate-300 transition-colors">
+      <div className={`inline-flex p-3 rounded-lg bg-slate-100 text-slate-700 mb-3 ${pulse ? 'animate-pulse' : ''}`}>
+        {icon}
       </div>
+      <p className="text-sm font-medium text-slate-600 mb-1">{title}</p>
+      <h3 className="text-3xl font-bold text-slate-900 tracking-tight">{value}</h3>
     </div>
   )
 }
