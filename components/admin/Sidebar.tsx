@@ -1,8 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { FlaticonIcon } from '../FlaticonIcon'
 
 interface SidebarProps {
@@ -15,7 +16,24 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse }: SidebarProps) {
     const pathname = usePathname()
     const { data: session } = useSession()
+    const [mounted, setMounted] = useState(false)
     const isSuperAdmin = session?.user?.role === 'SUPER_ADMIN'
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
+
+    const getPanelType = () => {
+        if (!mounted) return 'ADMIN PANEL'
+        switch (session?.user?.role) {
+            case 'SUPER_ADMIN': return 'SUPER ADMIN PANEL'
+            case 'ADMIN': return 'ADMIN PANEL'
+            case 'TOURNAMENT_MANAGER': return 'MANAGER PANEL'
+            case 'SUPPORT': return 'SUPPORT PANEL'
+            case 'MARKETING': return 'MARKETING PANEL'
+            default: return 'ADMIN PANEL'
+        }
+    }
 
     const navigation = [
         { name: 'Dashboard', href: '/admin/dashboard', icon: 'dashboard' },
@@ -62,15 +80,15 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                 </button>
 
                 {/* Header */}
-                <div className={`p-5 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white transition-all duration-300 ${isCollapsed ? 'px-3' : ''}`}>
+                <div className={`p-5 border-b border-slate-200 transition-all duration-300 ${isCollapsed ? 'px-3' : ''}`}>
                     <Link href="/admin/dashboard" className={`flex items-center gap-2.5 group ${isCollapsed ? 'justify-center' : ''}`}>
-                        <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 group-hover:scale-105 transition-all duration-200 flex-shrink-0">
+                        <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center group-hover:bg-blue-700 transition-colors flex-shrink-0">
                             <FlaticonIcon name="shield-check" style="bold" className="text-lg text-white" />
                         </div>
                         {!isCollapsed && (
                             <div className="overflow-hidden transition-all duration-300">
-                                <h1 className="text-lg font-bold tracking-tight whitespace-nowrap bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">LASTRUNX</h1>
-                                <p className="text-xs text-slate-500 font-semibold tracking-wider whitespace-nowrap">ADMIN PANEL</p>
+                                <h1 className="text-lg font-bold tracking-tight whitespace-nowrap text-slate-900">LASTRUNX</h1>
+                                <p className="text-xs text-slate-500 font-semibold tracking-wider whitespace-nowrap">{getPanelType()}</p>
                             </div>
                         )}
                     </Link>
@@ -90,27 +108,20 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                             <div key={item.name} className="relative group/item">
                                 <Link
                                     href={item.href}
-                                    className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${
-                                        isCollapsed ? 'px-3 justify-center' : 'px-4'
-                                    } ${
-                                        isActive
-                                            ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/25'
-                                            : 'text-slate-600 hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50 hover:text-slate-900'
+                                    className={`flex items-center gap-3 py-3 rounded-lg transition-colors group relative ${isCollapsed ? 'px-3 justify-center' : 'px-4'
+                                    } ${isActive
+                                            ? 'bg-blue-600 text-white'
+                                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                                     }`}
                                     title={isCollapsed ? item.name : ''}
                                 >
                                     <FlaticonIcon 
                                         name={item.icon} 
                                         style="bold" 
-                                        className={`text-lg transition-transform duration-200 ${
-                                            isActive ? 'scale-110' : 'group-hover:scale-110'
-                                        }`}
+                                        className="text-lg"
                                     />
                                     {!isCollapsed && (
                                         <span className="font-semibold whitespace-nowrap overflow-hidden">{item.name}</span>
-                                    )}
-                                    {isActive && !isCollapsed && (
-                                        <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white/30 rounded-l-full" />
                                     )}
                                 </Link>
                                 
@@ -139,27 +150,20 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                                     <div key={item.name} className="relative group/item">
                                         <Link
                                             href={item.href}
-                                            className={`flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${
-                                                isCollapsed ? 'px-3 justify-center' : 'px-4'
-                                            } ${
-                                                isActive
-                                                    ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/25'
-                                                    : 'text-slate-600 hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50 hover:text-slate-900'
+                                            className={`flex items-center gap-3 py-3 rounded-lg transition-colors group relative ${isCollapsed ? 'px-3 justify-center' : 'px-4'
+                                            } ${isActive
+                                                    ? 'bg-blue-600 text-white'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                                             }`}
                                             title={isCollapsed ? item.name : ''}
                                         >
                                             <FlaticonIcon 
                                                 name={item.icon} 
                                                 style="bold" 
-                                                className={`text-lg transition-transform duration-200 ${
-                                                    isActive ? 'scale-110' : 'group-hover:scale-110'
-                                                }`}
+                                                className="text-lg"
                                             />
                                             {!isCollapsed && (
                                                 <span className="font-semibold whitespace-nowrap overflow-hidden">{item.name}</span>
-                                            )}
-                                            {isActive && !isCollapsed && (
-                                                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white/30 rounded-l-full" />
                                             )}
                                         </Link>
                                         
@@ -178,30 +182,15 @@ export default function Sidebar({ isOpen, isCollapsed, onClose, onToggleCollapse
                 </nav>
 
                 {/* Footer */}
-                <div className={`p-4 border-t border-slate-200 bg-gradient-to-br from-slate-50 to-white transition-all duration-300 ${isCollapsed ? 'px-2' : ''}`}>
-                    <div className={`bg-gradient-to-br from-white to-slate-50 border border-slate-200 rounded-xl transition-all duration-300 ${isCollapsed ? 'p-2' : 'p-4'}`}>
-                        <div className={`flex items-center gap-3 transition-all duration-300 ${isCollapsed ? 'mb-2 flex-col' : 'mb-3'}`}>
-                            <div className="relative flex-shrink-0">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border border-slate-300">
-                                    <FlaticonIcon name="user" style="bold" className="text-lg text-slate-600" />
-                                </div>
-                                <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full shadow-sm"></div>
-                            </div>
-                            {!isCollapsed && (
-                                <div className="flex-1 min-w-0 overflow-hidden">
-                                    <p className="text-sm font-bold text-slate-800 truncate">Administrator</p>
-                                    <p className="text-xs text-slate-500 font-semibold truncate">Super Admin</p>
-                                </div>
-                            )}
-                        </div>
-                        <button 
-                            className={`w-full flex items-center justify-center gap-2 py-2.5 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white rounded-lg text-sm font-semibold transition-all duration-200 shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 hover:scale-[1.02] group ${isCollapsed ? 'px-2' : 'px-4'}`}
-                            title={isCollapsed ? 'Sign Out' : ''}
-                        >
-                            <FlaticonIcon name="sign-out-alt" style="bold" className="text-base group-hover:-translate-x-0.5 transition-transform" />
-                            {!isCollapsed && <span>Sign Out</span>}
-                        </button>
-                    </div>
+                <div className={`p-4 border-t border-slate-200 transition-all duration-300 ${isCollapsed ? 'px-2' : ''}`}>
+                    <button 
+                        onClick={() => signOut({ callbackUrl: '/admin/login' })}
+                        className={`w-full flex items-center justify-center gap-2 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors ${isCollapsed ? 'px-2' : 'px-4'}`}
+                        title={isCollapsed ? 'Sign Out' : ''}
+                    >
+                        <FlaticonIcon name="sign-out-alt" style="bold" className="text-base" />
+                        {!isCollapsed && <span>Sign Out</span>}
+                    </button>
                 </div>
             </div>
         </>

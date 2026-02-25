@@ -1,18 +1,84 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FlaticonIcon } from '../FlaticonIcon'
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 
 interface TopHeaderProps {
     onMenuClick: () => void
 }
 
+interface Notification {
+    id: string
+    type: string
+    icon: string
+    title: string
+    message: string
+    time: Date
+    link?: string
+}
+
 export default function TopHeader({ onMenuClick }: TopHeaderProps) {
     const { data: session } = useSession()
-    const [isProfileOpen, setIsProfileOpen] = useState(false)
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+    const [notifications, setNotifications] = useState<Notification[]>([])
+    const [unreadCount, setUnreadCount] = useState(0)
+    const [loading, setLoading] = useState(false)
+    const [mounted, setMounted] = useState(false)
+
+    const getRoleDisplay = () => {
+        switch (session?.user?.role) {
+            case 'SUPER_ADMIN': return { label: 'Super Admin', color: 'bg-purple-50 border-purple-200 text-purple-700' }
+            case 'ADMIN': return { label: 'Admin', color: 'bg-blue-50 border-blue-200 text-blue-700' }
+            case 'TOURNAMENT_MANAGER': return { label: 'Manager', color: 'bg-emerald-50 border-emerald-200 text-emerald-700' }
+            case 'SUPPORT': return { label: 'Support', color: 'bg-amber-50 border-amber-200 text-amber-700' }
+            case 'MARKETING': return { label: 'Marketing', color: 'bg-rose-50 border-rose-200 text-rose-700' }
+            default: return { label: 'Staff', color: 'bg-slate-50 border-slate-200 text-slate-700' }
+        }
+    }
+
+    useEffect(() => {
+        setMounted(true)
+        fetchNotifications()
+        // Refresh notifications every 30 seconds
+        const interval = setInterval(fetchNotifications, 30000)
+        return () => clearInterval(interval)
+    }, [])
+
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true)
+            const response = await fetch('/api/admin/notifications/recent')
+            if (response.ok) {
+                const data = await response.json()
+                setNotifications(data.notifications || [])
+                setUnreadCount(data.unreadCount || 0)
+            }
+        } catch (error) {
+            console.error('Error fetching notifications:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const getIconColor = (type: string) => {
+        switch (type) {
+            case 'user_registration': return 'bg-blue-50 text-blue-600'
+            case 'dispute': return 'bg-amber-50 text-amber-600'
+            case 'kyc': return 'bg-purple-50 text-purple-600'
+            case 'activity': return 'bg-slate-50 text-slate-600'
+            default: return 'bg-gray-50 text-gray-600'
+        }
+    }
+
+    const getTimeAgo = (date: Date) => {
+        const seconds = Math.floor((new Date().getTime() - new Date(date).getTime()) / 1000)
+        if (seconds < 60) return 'Just now'
+        if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`
+        if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`
+        return `${Math.floor(seconds / 86400)} days ago`
+    }
 
     return (
         <header className="sticky top-0 z-30 lg:left-64 bg-white/80 backdrop-blur-md border-b border-slate-200">
@@ -42,11 +108,18 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                     {/* Notifications */}
                     <div className="relative">
                         <button
-                            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                            onClick={() => {
+                                setIsNotificationsOpen(!isNotificationsOpen)
+                                if (!isNotificationsOpen) fetchNotifications()
+                            }}
                             className="p-2 relative text-slate-500 hover:bg-slate-100 rounded-xl transition-colors"
                         >
                             <FlaticonIcon name="bell" style="bold" className="text-lg" />
-                            <span className="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+                            {unreadCount > 0 && (
+                                <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
                         </button>
 
                         {/* Notifications Dropdown */}
@@ -59,33 +132,40 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-20 py-2">
                                     <div className="px-4 py-2 border-b border-slate-50 flex justify-between items-center">
                                         <h3 className="font-semibold text-slate-900 text-sm">Notifications</h3>
-                                        <span className="text-xs text-blue-600 font-medium hover:underline cursor-pointer">Mark all read</span>
+                                        <button 
+                                            onClick={fetchNotifications}
+                                            className="text-xs text-blue-600 font-medium hover:underline cursor-pointer disabled:opacity-50"
+                                            disabled={loading}
+                                        >
+                                            {loading ? 'Loading...' : 'Refresh'}
+                                        </button>
                                     </div>
                                     <div className="max-h-64 overflow-y-auto">
-                                        <div className="p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 cursor-pointer">
-                                            <div className="flex gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center flex-shrink-0">
-                                                    <FlaticonIcon name="user" style="bold" className="text-base" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm text-slate-800 font-medium">New User Registration</p>
-                                                    <p className="text-xs text-slate-500 mt-0.5">John Doe signed up via Email</p>
-                                                    <p className="text-[10px] text-slate-400 mt-1">2 mins ago</p>
-                                                </div>
+                                        {notifications.length === 0 ? (
+                                            <div className="p-8 text-center text-slate-500 text-sm">
+                                                No new notifications
                                             </div>
-                                        </div>
-                                        <div className="p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 cursor-pointer">
-                                            <div className="flex gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
-                                                    <FlaticonIcon name="bell" style="bold" className="text-base" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm text-slate-800 font-medium">New Dispute Raised</p>
-                                                    <p className="text-xs text-slate-500 mt-0.5">Tournament #1234 reported</p>
-                                                    <p className="text-[10px] text-slate-400 mt-1">15 mins ago</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        ) : (
+                                            notifications.map((notif) => (
+                                                <Link
+                                                    key={notif.id}
+                                                    href={notif.link || '#'}
+                                                    onClick={() => setIsNotificationsOpen(false)}
+                                                    className="block p-4 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0"
+                                                >
+                                                    <div className="flex gap-3">
+                                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${getIconColor(notif.type)}`}>
+                                                            <FlaticonIcon name={notif.icon} style="bold" className="text-base" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm text-slate-800 font-medium truncate">{notif.title}</p>
+                                                            <p className="text-xs text-slate-500 mt-0.5 truncate">{notif.message}</p>
+                                                            <p className="text-[10px] text-slate-400 mt-1">{getTimeAgo(notif.time)}</p>
+                                                        </div>
+                                                    </div>
+                                                </Link>
+                                            ))
+                                        )}
                                     </div>
                                     <div className="px-4 py-2 border-t border-slate-50 bg-slate-50/50 text-center">
                                         <Link href="/admin/notifications" className="text-xs font-semibold text-blue-600 hover:text-blue-700">View All Notifications</Link>
@@ -95,68 +175,13 @@ export default function TopHeader({ onMenuClick }: TopHeaderProps) {
                         )}
                     </div>
 
-                    {/* Profile Dropdown */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setIsProfileOpen(!isProfileOpen)}
-                            className="flex items-center gap-3 p-1.5 pl-3 pr-2 rounded-xl text-left hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200"
-                        >
-                            <div className="hidden sm:block text-right">
-                                <p className="text-sm font-semibold text-slate-900 leading-none">
-                                    {session?.user?.username || 'Admin User'}
-                                </p>
-                                <p className="text-xs text-slate-500 mt-1 leading-none">
-                                    {session?.user?.email || 'admin@example.com'}
-                                </p>
-                            </div>
-                            <div className="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold shadow-md shadow-blue-600/20">
-                                {session?.user?.username?.[0]?.toUpperCase() || 'A'}
-                            </div>
-                        </button>
-
-                        {/* Dropdown Menu */}
-                        {isProfileOpen && (
-                            <>
-                                <div
-                                    className="fixed inset-0 z-10"
-                                    onClick={() => setIsProfileOpen(false)}
-                                ></div>
-                                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-20 py-1">
-                                    <div className="px-4 py-3 border-b border-slate-50 sm:hidden">
-                                        <p className="text-sm font-semibold text-slate-900">
-                                            {session?.user?.username || 'Admin User'}
-                                        </p>
-                                        <p className="text-xs text-slate-500 truncate">
-                                            {session?.user?.email || 'admin@example.com'}
-                                        </p>
-                                    </div>
-                                    <Link
-                                        href="/admin/profile"
-                                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
-                                    >
-                                        <FlaticonIcon name="user" style="regular" className="text-base" />
-                                        My Profile
-                                    </Link>
-                                    <Link
-                                        href="/admin/settings"
-                                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-blue-600 transition-colors"
-                                    >
-                                        <FlaticonIcon name="settings" style="regular" className="text-base" />
-                                        Settings
-                                    </Link>
-                                    <div className="border-t border-slate-50 mt-1">
-                                        <button
-                                            onClick={() => signOut({ callbackUrl: '/admin/login' })}
-                                            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-medium"
-                                        >
-                                            <FlaticonIcon name="sign-out-alt" style="regular" className="text-base" />
-                                            Sign Out
-                                        </button>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    {/* Role Badge */}
+                    {mounted && session?.user && (
+                        <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border ${getRoleDisplay().color} transition-all`}>
+                            <FlaticonIcon name="shield-check" style="bold" className="text-sm" />
+                            <span className="text-xs font-semibold whitespace-nowrap">{getRoleDisplay().label}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>
