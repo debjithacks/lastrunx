@@ -10,6 +10,7 @@ import {
   CreditCard, Plus, Loader2, CheckCircle, XCircle, X,
   TrendingUp, Calendar
 } from 'lucide-react'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 interface Transaction {
   id: string
@@ -29,6 +30,7 @@ export default function WalletPage() {
   const [showAddMoney, setShowAddMoney] = useState(false)
   const [amount, setAmount] = useState('')
   const [processing, setProcessing] = useState(false)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', type: 'info' as 'success' | 'error' | 'warning' | 'info' })
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -65,7 +67,7 @@ export default function WalletPage() {
   const handleAddMoney = async () => {
     const amountNum = parseFloat(amount)
     if (!amountNum || amountNum < 100) {
-      alert('Minimum amount is ₹100')
+      setConfirmModal({ isOpen: true, message: 'Minimum amount is ₹100', type: 'error' })
       return
     }
 
@@ -85,7 +87,7 @@ export default function WalletPage() {
       const orderData = await orderRes.json()
 
       if (!orderRes.ok) {
-        alert('Error: ' + (orderData.error || 'Unable to process request'))
+        setConfirmModal({ isOpen: true, message: 'Error: ' + (orderData.error || 'Unable to process request'), type: 'error' })
         setProcessing(false)
         return
       }
@@ -120,9 +122,9 @@ export default function WalletPage() {
             setShowAddMoney(false)
             setAmount('')
             fetchWalletData()
-            alert('✅ Money added successfully!')
+            setConfirmModal({ isOpen: true, message: 'Money added successfully!', type: 'success' })
           } else {
-            alert('❌ Payment verification failed. Please contact support.')
+            setConfirmModal({ isOpen: true, message: 'Payment verification failed. Please contact support.', type: 'error' })
           }
         },
         prefill: {
@@ -139,7 +141,7 @@ export default function WalletPage() {
     } catch (error) {
       console.error('Payment error:', error)
       setProcessing(false)
-      alert('❌ Error processing payment. Please try again.')
+      setConfirmModal({ isOpen: true, message: 'Error processing payment. Please try again.', type: 'error' })
     }
   }
 
@@ -360,6 +362,14 @@ export default function WalletPage() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        message={confirmModal.message}
+        type={confirmModal.type}
+      />
     </>
   )
 }

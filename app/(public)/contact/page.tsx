@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Mail, MessageSquare, Send, Phone, MapPin, MessageCircle, HelpCircle, FileText, CreditCard, Gavel } from 'lucide-react'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -10,10 +11,11 @@ export default function ContactPage() {
     subject: '',
     message: ''
   })
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', type: 'info' as 'success' | 'error' | 'warning' | 'info' })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Thank you for your message! Our team will get back to you within 24 hours.')
+    setConfirmModal({ isOpen: true, message: 'Thank you for your message! Our team will get back to you within 24 hours.', type: 'success' })
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -209,6 +211,14 @@ export default function ContactPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        message={confirmModal.message}
+        type={confirmModal.type}
+      />
     </div>
   )
 }

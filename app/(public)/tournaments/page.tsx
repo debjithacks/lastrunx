@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Trophy, Users, Clock, Zap, Target, Search, Filter, Gamepad2, Banknote, ShieldCheck, PlayCircle, ArrowRight, Wallet, CreditCard, X, Eye, CheckCircle, Loader2 } from 'lucide-react'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 interface Tournament {
   id: string
@@ -40,6 +41,7 @@ export default function TournamentsPage() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [processingMessage, setProcessingMessage] = useState('')
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', type: 'info' as 'success' | 'error' | 'warning' | 'info' })
 
   useEffect(() => {
     setIsVisible(true)
@@ -122,7 +124,7 @@ export default function TournamentsPage() {
           }, 2000)
         } else {
           setIsProcessing(false)
-          alert('❌ ' + (data.error || 'Unable to join tournament. Please try again.'))
+          setConfirmModal({ isOpen: true, message: data.error || 'Unable to join tournament. Please try again.', type: 'error' })
         }
       } else {
         // Pay online with Razorpay
@@ -140,7 +142,7 @@ export default function TournamentsPage() {
 
         if (!orderRes.ok) {
           setIsProcessing(false)
-          alert('❌ ' + (orderData.error || 'Unable to process payment request. Please try again.'))
+          setConfirmModal({ isOpen: true, message: orderData.error || 'Unable to process payment request. Please try again.', type: 'error' })
           setSelectedPaymentMethod(null)
           return
         }
@@ -181,7 +183,7 @@ export default function TournamentsPage() {
                 router.push('/my-tournaments')
               }, 2000)
             } else {
-              alert('❌ ' + (verifyData.error || 'Payment verification failed. Please contact support.'))
+              setConfirmModal({ isOpen: true, message: verifyData.error || 'Payment verification failed. Please contact support.', type: 'error' })
             }
           },
           prefill: {
@@ -199,7 +201,7 @@ export default function TournamentsPage() {
     } catch (error) {
       console.error('Payment error:', error)
       setIsProcessing(false)
-      alert('❌ Payment Processing Error\n\nUnable to complete your transaction. Please try again.')
+      setConfirmModal({ isOpen: true, message: 'Payment Processing Error\n\nUnable to complete your transaction. Please try again.', type: 'error' })
     } finally {
       setSelectedPaymentMethod(null)
     }
@@ -522,6 +524,14 @@ export default function TournamentsPage() {
           </div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        message={confirmModal.message}
+        type={confirmModal.type}
+      />
     </div>
   )
 }

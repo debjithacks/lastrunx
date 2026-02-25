@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { signIn } from 'next-auth/react'
 import { FlaticonIcon } from '@/components/FlaticonIcon'
+import ConfirmationModal from '@/components/ConfirmationModal'
 
 // Country codes with validation rules
 const countryCodes = [
@@ -35,6 +36,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [passwordStrength, setPasswordStrength] = useState(0)
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, message: '', type: 'info' as 'success' | 'error' | 'warning' | 'info' })
 
   // Auto-detect country based on timezone
   useEffect(() => {
@@ -104,12 +106,12 @@ export default function SignupPage() {
     e.preventDefault()
 
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!')
+      setConfirmModal({ isOpen: true, message: 'Passwords do not match!', type: 'error' })
       return
     }
 
     if (!formData.agreeTerms) {
-      alert('Please accept the terms and conditions')
+      setConfirmModal({ isOpen: true, message: 'Please accept the terms and conditions', type: 'warning' })
       return
     }
 
@@ -132,15 +134,17 @@ export default function SignupPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        alert(data.error || 'Registration failed')
+        setConfirmModal({ isOpen: true, message: data.error || 'Registration failed', type: 'error' })
         return
       }
 
-      alert('Account created successfully! Please login.')
-      window.location.href = '/login'
+      setConfirmModal({ isOpen: true, message: 'Account created successfully! Please login.', type: 'success' })
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 1500)
     } catch (error) {
       console.error('Signup error:', error)
-      alert('An error occurred during registration')
+      setConfirmModal({ isOpen: true, message: 'An error occurred during registration', type: 'error' })
     } finally {
       setIsLoading(false)
     }
@@ -492,6 +496,14 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+        message={confirmModal.message}
+        type={confirmModal.type}
+      />
     </div>
   )
 }
