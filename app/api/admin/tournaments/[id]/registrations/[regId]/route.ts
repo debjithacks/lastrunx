@@ -13,7 +13,8 @@ export async function PATCH(
     const { id: tournamentId, regId } = await params
     const session = await getServerSession(authOptions)
 
-    if (!session || !['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER'].includes(session.user.role)) {
+    const adminRoles = ['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER', 'SUPPORT', 'MARKETING']
+    if (!session || !adminRoles.includes(session.user.role)) {
       return NextResponse.json(
         { error: 'Forbidden - Admin access required' },
         { status: 403 }
@@ -122,7 +123,8 @@ export async function DELETE(
     const { id: tournamentId, regId } = await params
     const session = await getServerSession(authOptions)
 
-    if (!session || !['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER'].includes(session.user.role)) {
+    const adminRoles = ['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER', 'SUPPORT', 'MARKETING']
+    if (!session || !adminRoles.includes(session.user.role)) {
       return NextResponse.json(
         { error: 'Forbidden - Admin access required' },
         { status: 403 }
