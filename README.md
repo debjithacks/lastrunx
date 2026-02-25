@@ -1,6 +1,6 @@
 <div align="center">
   
-# 🎮 SkillArena - Gaming Tournament Platform
+# 🎮 LastRunx - Gaming Tournament Platform
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.1-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -21,7 +21,7 @@
 <div align="center">
 
 ### Landing Page
-![Landing Page](https://placehold.co/1200x600/4F46E5/FFFFFF/png?text=SkillArena+Landing+Page&font=roboto)
+![Landing Page](https://placehold.co/1200x600/4F46E5/FFFFFF/png?text=LastRunx+Landing+Page&font=roboto)
 *Modern, responsive landing page with tournament listings*
 
 ### User Dashboard
