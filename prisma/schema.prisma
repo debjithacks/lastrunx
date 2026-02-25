@@ -237,6 +237,7 @@ model Ad {
   openInNewTab    Boolean     @default(true)
   priority        Int         @default(0)
   isActive        Boolean     @default(true)
+  isHidden        Boolean     @default(false)
   startDate       DateTime
   expiryDate      DateTime
   deviceTarget    DeviceTarget @default(ALL)
@@ -247,6 +248,7 @@ model Ad {
   updatedAt       DateTime    @updatedAt
 
   @@index([isActive])
+  @@index([isHidden])
   @@index([placement])
   @@index([startDate])
   @@index([expiryDate])

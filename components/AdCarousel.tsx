@@ -161,6 +161,7 @@ export default function AdCarousel({
               autoPlay
               muted={isMuted}
               playsInline
+              loop={ads.length === 1}
               className="w-full h-auto object-cover"
               preload="metadata"
               onEnded={handleVideoEnded}
