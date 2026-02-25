@@ -7,6 +7,7 @@ declare module 'next-auth' {
     username: string
     role: string
     walletBalance: string
+    requires2FA?: boolean
   }
 
   interface Session {
@@ -16,6 +17,7 @@ declare module 'next-auth' {
       username: string
       role: string
       walletBalance: string
+      requires2FA?: boolean
     }
   }
 }
@@ -26,5 +28,6 @@ declare module 'next-auth/jwt' {
     username: string
     role: string
     walletBalance: string
+    requires2FA?: boolean
   }
 }
