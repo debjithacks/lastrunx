@@ -9,7 +9,11 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !['ADMIN', 'SUPER_ADMIN', 'SUPPORT'].includes(session.user.role)) {
+    console.log('Admin users API - Session:', session ? { role: session.user.role, email: session.user.email } : 'No session')
+    
+    const adminRoles = ['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER', 'SUPPORT', 'MARKETING']
+    if (!session || !adminRoles.includes(session.user.role)) {
+      console.log('Unauthorized access attempt to admin users')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
