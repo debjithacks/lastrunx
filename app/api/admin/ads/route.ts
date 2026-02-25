@@ -19,6 +19,7 @@ export async function GET(req: NextRequest) {
     const placement = searchParams.get('placement')
     const search = searchParams.get('search')
     const expired = searchParams.get('expired')
+    const hidden = searchParams.get('hidden')
 
     const skip = (page - 1) * limit
 
@@ -51,6 +52,12 @@ export async function GET(req: NextRequest) {
       }
     }
 
+    if (hidden === 'visible') {
+      where.isHidden = false
+    } else if (hidden === 'hidden') {
+      where.isHidden = true
+    }
+
     const [ads, total] = await Promise.all([
       prisma.ad.findMany({
         where,
@@ -66,6 +73,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       ads,
+      total,
+      totalPages: Math.ceil(total / limit),
       pagination: {
         page,
         limit,
