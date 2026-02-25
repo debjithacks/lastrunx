@@ -12,7 +12,8 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !['ADMIN', 'SUPER_ADMIN', 'MARKETING'].includes(session.user.role)) {
+    const adminRoles = ['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER', 'SUPPORT', 'MARKETING']
+    if (!session || !adminRoles.includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -55,7 +56,8 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions)
     
-    if (!session || !['ADMIN', 'SUPER_ADMIN', 'MARKETING'].includes(session.user.role)) {
+    const adminRoles = ['ADMIN', 'SUPER_ADMIN', 'TOURNAMENT_MANAGER', 'SUPPORT', 'MARKETING']
+    if (!session || !adminRoles.includes(session.user.role)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
