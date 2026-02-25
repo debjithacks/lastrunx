@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     })
 
     // If TOURNAMENT_FEE, join the tournament
-    if (transaction.type === 'TOURNAMENT_FEE' && transaction.metadata && 'tournamentId' in transaction.metadata) {
+    if (transaction.type === 'TOURNAMENT_FEE' && transaction.metadata && typeof transaction.metadata === 'object' && !Array.isArray(transaction.metadata) && 'tournamentId' in transaction.metadata) {
       const tournamentId = (transaction.metadata as { tournamentId: string }).tournamentId
       
       try {
