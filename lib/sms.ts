@@ -123,16 +123,16 @@ export async function sendSMS(phone: string, message: string): Promise<void> {
 }
 
 export async function sendOTP(phone: string, otp: string): Promise<void> {
-  const message = `Your SkillArena OTP is ${otp}. Valid for 10 minutes. Do not share with anyone. - SkillArena`
+  const message = `Your LastRunx OTP is ${otp}. Valid for 10 minutes. Do not share with anyone. - LastRunx`
   await sendSMS(phone, message)
 }
 
 export async function sendTournamentReminder(phone: string, tournamentName: string, time: string): Promise<void> {
-  const message = `Reminder: Your tournament "${tournamentName}" starts at ${time}. Join room details will be available 15 minutes before. - SkillArena`
+  const message = `Reminder: Your tournament "${tournamentName}" starts at ${time}. Join room details will be available 15 minutes before. - LastRunx`
   await sendSMS(phone, message)
 }
 
 export async function sendWinNotification(phone: string, amount: number, tournamentName: string): Promise<void> {
-  const message = `Congratulations! You won ₹${amount} in "${tournamentName}". Amount credited to your wallet. - SkillArena`
+  const message = `Congratulations! You won ₹${amount} in "${tournamentName}". Amount credited to your wallet. - LastRunx`
   await sendSMS(phone, message)
 }
